@@ -22,7 +22,7 @@ public class ClientService {
 
     @Transactional
     public ClientEntity getEntityByRequest(ClientRequest clientRequest) {
-        Optional<ClientEntity> opt = clientRepository.findByVkLink(clientRequest.getVkLink());
+        Optional<ClientEntity> opt = clientRepository.findByVkId(clientRequest.getVkId());
         ClientEntity entity;
 
         if (opt.isEmpty()) {
@@ -41,8 +41,8 @@ public class ClientService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public ClientEntity getEntityByVkLink(String vkLink) {
-        return clientRepository.findByVkLink(vkLink).orElseThrow(() -> null);
+    public ClientEntity getEntityByVkId(Long vkId) {
+        return clientRepository.findByVkId(vkId).orElseThrow(() -> null);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

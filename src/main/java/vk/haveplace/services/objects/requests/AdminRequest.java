@@ -10,7 +10,7 @@ public class AdminRequest {
     private String name;
 
     @NotNull
-    private String vkLink;
+    private Long vkId;
 
     @NotNull
     private Role role;

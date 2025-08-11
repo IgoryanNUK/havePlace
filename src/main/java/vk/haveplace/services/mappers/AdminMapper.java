@@ -10,7 +10,7 @@ public class AdminMapper {
         AdminEntity entity = new AdminEntity();
 
         entity.setName(req.getName());
-        entity.setVkLink(req.getVkLink());
+        entity.setVkId(req.getVkId());
         entity.setRole(req.getRole());
 
         return entity;
@@ -25,7 +25,7 @@ public class AdminMapper {
 
             dto.setId(entity.getId());
             dto.setName(entity.getName());
-            dto.setVkLink(entity.getVkLink());
+            dto.setVkId(entity.getVkId());
             dto.setRole(entity.getRole());
         }
 

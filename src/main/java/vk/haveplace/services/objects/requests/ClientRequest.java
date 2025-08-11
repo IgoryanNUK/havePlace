@@ -8,5 +8,6 @@ public class ClientRequest {
     @NotNull
     private String name;
     private String phone;
-    private String vkLink;
+    @NotNull
+    private Long vkId;
 }

@@ -18,6 +18,6 @@ public class ClientEntity {
     @Column(name = "client_phone")
     private String phone;
 
-    @Column(name = "client_vk_link")
-    private String vkLink;
+    @Column(name = "client_vk_id")
+    private Long vkId;
 }

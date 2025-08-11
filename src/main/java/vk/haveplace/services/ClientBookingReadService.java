@@ -68,8 +68,8 @@ public class ClientBookingReadService {
     }
 
     @Transactional
-    public List<BookingSimpleDTO> getBookingsByClient(String vkLink) {
-        ClientEntity clientEntity = clientService.getEntityByVkLink(vkLink);
+    public List<BookingSimpleDTO> getBookingsByClient(Long vkId) {
+        ClientEntity clientEntity = clientService.getEntityByVkId(vkId);
 
         if (clientEntity == null) {
             return null;

@@ -54,8 +54,8 @@ public class ClientController {
         return bookingReadService.getFreeBookings(dateAndTime);
     }
 
-    @GetMapping("/my")
-    public List<BookingSimpleDTO> getMyBookings(@RequestBody @Validated ClientRequest client) {
-        return bookingReadService.getBookingsByClient(client.getVkLink());
+    @GetMapping("/my/{vkId}")
+    public List<BookingSimpleDTO> getMyBookings(@PathVariable Long vkId) {
+        return bookingReadService.getBookingsByClient(vkId);
     }
 }

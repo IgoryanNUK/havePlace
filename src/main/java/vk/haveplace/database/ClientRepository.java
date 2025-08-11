@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ClientRepository extends JpaRepository<ClientEntity, Integer> {
-    Optional<ClientEntity> findByVkLink(String vkLink);
+    Optional<ClientEntity> findByVkId(Long vkId);
 }

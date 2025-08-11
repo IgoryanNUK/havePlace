@@ -19,8 +19,8 @@ public class AdminEntity {
     @Column(name = "admin_name")
     private String name;
 
-    @Column(name = "admin_vkLink")
-    private String vkLink;
+    @Column(name = "admin_vk_id")
+    private Long vkId;
 
     @Enumerated(EnumType.STRING)
     private Role role;

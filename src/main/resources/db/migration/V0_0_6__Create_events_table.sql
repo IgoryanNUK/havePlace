@@ -5,6 +5,5 @@ create table if not exists events (
     client_id int references clients(client_id),
     admin_id int references admins(admin_id),
     operation_type varchar(20) not null,
-    comments varchar(50),
-    admin_added_id int references admins(admin_id)
+    comments varchar(50)
 )

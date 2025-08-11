@@ -14,7 +14,7 @@ public class ClientMapper {
 
         entity.setName(request.getName());
         entity.setPhone(request.getPhone());
-        entity.setVkLink(request.getVkLink());
+        entity.setVkId(request.getVkId());
         return entity;
     }
 
@@ -24,7 +24,7 @@ public class ClientMapper {
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setPhone(entity.getPhone());
-        dto.setVkLink(entity.getVkLink());
+        dto.setVkId(entity.getVkId());
 
         return dto;
     }

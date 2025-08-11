@@ -7,6 +7,6 @@ import vk.haveplace.database.entities.Role;
 public class AdminDTO {
     private Integer id;
     private String name;
-    private String vkLink;
+    private Long vkId;
     private Role role;
 }
