@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import vk.haveplace.exceptions.AdminNotFound;
 import vk.haveplace.exceptions.BookingNotFound;
 
@@ -18,6 +19,12 @@ public class BadRequestHandler {
     @ExceptionHandler
     public ResponseEntity<ExceptionResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException h) {
         return new ResponseEntity<>(new ExceptionResponse(h.getClass().getName(), h.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException m) {
+        return new ResponseEntity<>(new ExceptionResponse("MethodArgumentTypeMismatchException", m.getMessage()),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler

@@ -83,8 +83,12 @@ public class RegularEventService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Boolean remove(int id) {
-        repository.deleteById(id);
-        return true;
+        if (repository.findById(id).isPresent()) {
+            repository.deleteById(id);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)

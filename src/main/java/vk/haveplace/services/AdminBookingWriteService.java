@@ -9,8 +9,8 @@ import vk.haveplace.database.entities.AdminEntity;
 import vk.haveplace.database.entities.BookingEntity;
 import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.exceptions.AdminNotFound;
+import vk.haveplace.exceptions.BookingNotFound;
 import vk.haveplace.exceptions.BookingUpdateError;
-import vk.haveplace.services.objects.dto.AdminDTO;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
 
 import java.sql.Date;
@@ -43,7 +43,7 @@ public class AdminBookingWriteService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public boolean lock(int bookingId) {
-        BookingEntity entity = bookingRepository.findFirstById(bookingId).orElseThrow();
+        BookingEntity entity = bookingRepository.findFirstById(bookingId).orElseThrow(() -> new BookingNotFound("id = "+bookingId));
 
         entity.setIsAvailable(!entity.getIsAvailable());
         return entity.getIsAvailable();

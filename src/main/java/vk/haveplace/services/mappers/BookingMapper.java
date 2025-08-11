@@ -1,11 +1,9 @@
 package vk.haveplace.services.mappers;
 
 import vk.haveplace.database.entities.BookingEntity;
-import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
 import vk.haveplace.services.objects.dto.BookingSimpleDTO;
-import vk.haveplace.services.objects.requests.BookingRequest;
 
 public class BookingMapper {
 
@@ -41,9 +39,6 @@ public class BookingMapper {
         BookingDTO dto = new BookingDTO();
 
         dto.setId(entity.getId());
-        dto.setDate(entity.getDate());
-        dto.setStartTime(entity.getStartTime());
-        dto.setEndTime(entity.getEndTime());
         dto.setLocation(LocationMapper.getDTOFromEntity(entity.getLocation()));
         dto.setNumberOfPlayers(entity.getNumberOfPlayers() == null ? 0 : entity.getNumberOfPlayers());
         dto.setClient(entity.getClient() == null ? null : ClientMapper.getDTOFromEntity(entity.getClient()));
