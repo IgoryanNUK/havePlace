@@ -27,9 +27,6 @@ public class BookingMapper {
         BookingFreeDTO dto = new BookingFreeDTO();
 
         dto.setId(entity.getId());
-        dto.setDate(entity.getDate().toLocalDate());
-        dto.setStartTime(entity.getStartTime());
-        dto.setEndTime(entity.getEndTime());
         dto.setLocation(LocationMapper.getDTOFromEntity(entity.getLocation()));
 
         return dto;

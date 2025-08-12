@@ -12,4 +12,27 @@ import java.sql.Time;
 public class TimeSlot {
     private Time start;
     private Time end;
+
+    public static TimeSlot unite(TimeSlot slot1, TimeSlot slot2) {
+        TimeSlot result = new TimeSlot(min(slot1.getStart(), slot2.getStart()),
+                max(slot1.getEnd(), slot2.getEnd()));
+
+        return result;
+    }
+
+    protected static Time max(Time time1, Time time2) {
+        if (time1.compareTo(time2) > 0) {
+            return time1;
+        } else {
+            return time2;
+        }
+    }
+
+    protected static Time min(Time time1, Time time2) {
+        if (time1.compareTo(time2) > 0) {
+            return time2;
+        } else {
+            return time1;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package vk.haveplace.services;
+package vk.haveplace.services.admin;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -9,6 +9,7 @@ import vk.haveplace.database.entities.ClientEntity;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.database.entities.RegularEventEntity;
 import vk.haveplace.exceptions.RegularEventBusy;
+import vk.haveplace.services.ClientService;
 import vk.haveplace.services.mappers.RegularEventMapper;
 import vk.haveplace.services.objects.dto.RegularEventDTO;
 import vk.haveplace.services.objects.requests.RegularEventRequest;

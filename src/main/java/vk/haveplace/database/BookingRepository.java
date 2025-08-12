@@ -74,7 +74,13 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
             "select b from BookingEntity b " +
                     "WHERE b.date = :date and b.startTime = :startTime and b.endTime = :endTime and b.isAvailable = true"
     )
-    List<BookingEntity> findFreeBookingsUntil(Date date, Time startTime, Time endTime);
+    List<BookingEntity> findFree(Date date, Time startTime, Time endTime);
+
+    @Query(
+            "select b from BookingEntity b " +
+                    "WHERE b.date = :date and b.isAvailable = true"
+    )
+    List<BookingEntity> findFree(Date date);
 
     List<BookingEntity> findAllByDateAndStartTimeAndEndTime(Date date, Time startTime, Time endTime);
 

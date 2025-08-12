@@ -9,7 +9,7 @@ import vk.haveplace.database.BookingRepository;
 import vk.haveplace.database.entities.BookingEntity;
 import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.database.entities.ClientEntity;
-import vk.haveplace.database.entities.RegularEventEntity;
+import vk.haveplace.database.entities.OperationType;
 import vk.haveplace.exceptions.BookingNotFound;
 import vk.haveplace.exceptions.BookingUpdateError;
 import vk.haveplace.exceptions.WrongClient;
@@ -24,13 +24,15 @@ public class ClientBookingWriteService {
     private final ClientService clientService;
     private final BookingRepository bookingRepository;
     private final EntityManager entityManager;
+    private final EventService eventService;
 
     @Autowired
     public ClientBookingWriteService(ClientService clientService, BookingRepository bookingRepository,
-                                     EntityManager entityManager) {
+                                     EntityManager entityManager, EventService eventService) {
         this.clientService = clientService;
         this.bookingRepository = bookingRepository;
         this.entityManager = entityManager;
+        this.eventService = eventService;
     }
 
     private BookingSimpleDTO checkUpdateResult(int updated, int bookingId) {
@@ -53,7 +55,15 @@ public class ClientBookingWriteService {
         int updated = bookingRepository.saveNew(booking.getId(), clientEntity, booking.getDevice(),
                 booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
 
-        return checkUpdateResult(updated, booking.getId());
+        if (updated == 1) {
+            entityManager.clear();
+            BookingEntity entity = bookingRepository.findFirstById(booking.getId()).orElseThrow();
+
+            eventService.bookingEvent(entity, clientEntity, OperationType.BOOK, null);
+            return BookingMapper.getSimpleDTOFromEntity(entity);
+        } else {
+            throw new BookingUpdateError(updated);
+        }
     }
 
     /**
@@ -63,12 +73,21 @@ public class ClientBookingWriteService {
     public BookingSimpleDTO update(BookingRequest booking) {
         ClientRequest client = booking.getClient();
         ClientEntity clientEntity = clientService.getEntityByRequest(client);
+
         validateAccess(clientEntity, booking.getId());
 
         int updated = bookingRepository.update(booking.getId(), clientEntity, booking.getDevice(),
                 booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
 
-        return checkUpdateResult(updated, booking.getId());
+        if (updated == 1) {
+            entityManager.clear();
+            BookingEntity entity = bookingRepository.findFirstById(booking.getId()).orElseThrow();
+
+            eventService.bookingEvent(entity, clientEntity, OperationType.UPDATE, null);
+            return BookingMapper.getSimpleDTOFromEntity(entity);
+        } else {
+            throw new BookingUpdateError(updated);
+        }
     }
 
     private void validateAccess(ClientEntity client, int bookingId) {
@@ -92,6 +111,8 @@ public class ClientBookingWriteService {
         int updated = bookingRepository.cancel(id, clientEntity);
 
         if (updated == 1) {
+            eventService.bookingEvent(bookingRepository.findById(id).orElseThrow(() -> new BookingNotFound("id = " + id)),
+                    clientEntity, OperationType.CANCEL, null);
             return true;
         } else {
             throw new BookingUpdateError(updated);

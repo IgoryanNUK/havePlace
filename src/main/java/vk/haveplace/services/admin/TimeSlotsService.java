@@ -1,4 +1,4 @@
-package vk.haveplace.services;
+package vk.haveplace.services.admin;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -11,6 +11,7 @@ import vk.haveplace.database.entities.BookingEntity;
 import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.database.entities.RegularEventEntity;
+import vk.haveplace.services.ClientBookingWriteService;
 import vk.haveplace.services.objects.TimeSlot;
 
 import java.sql.Date;

@@ -3,10 +3,8 @@ package vk.haveplace.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import vk.haveplace.services.RegularEventService;
-import vk.haveplace.services.objects.dto.AdminDTO;
+import vk.haveplace.services.admin.RegularEventService;
 import vk.haveplace.services.objects.dto.RegularEventDTO;
-import vk.haveplace.services.objects.requests.DateAndTimesRequest;
 import vk.haveplace.services.objects.requests.RegularEventRequest;
 import vk.haveplace.services.objects.requests.RegularEventUpdateRequest;
 

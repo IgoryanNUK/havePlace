@@ -6,16 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import vk.haveplace.services.AdminBookingReadService;
-import vk.haveplace.services.AdminBookingWriteService;
-import vk.haveplace.services.RegularEventService;
-import vk.haveplace.services.TimeSlotsService;
+import vk.haveplace.services.admin.AdminBookingReadService;
+import vk.haveplace.services.admin.AdminBookingWriteService;
+import vk.haveplace.services.admin.TimeSlotsService;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
-import vk.haveplace.services.objects.dto.RegularEventDTO;
+import vk.haveplace.services.objects.requests.AdminRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
-import vk.haveplace.services.objects.requests.RegularEventRequest;
-import vk.haveplace.services.objects.requests.RegularEventUpdateRequest;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -54,12 +51,12 @@ public class AdminController {
     }
 
     @PostMapping("/confirm/{bookingId}")
-    public Boolean confirm(@PathVariable int bookingId) {
-        return bookingWriteService.confirmBooking(bookingId);
+    public Boolean confirm(@PathVariable int bookingId, @RequestBody AdminRequest admin) {
+        return bookingWriteService.confirmBooking(bookingId, admin);
     }
 
     @PostMapping("/lock/{bookingId}")
-    public Boolean lock(@PathVariable int bookingId) {
-        return bookingWriteService.lock(bookingId);
+    public Boolean lock(@PathVariable int bookingId, @RequestBody AdminRequest admin) {
+        return bookingWriteService.lock(bookingId, admin);
     }
 }

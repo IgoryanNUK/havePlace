@@ -1,12 +1,10 @@
 package vk.haveplace.controllers;
 
-import jakarta.validation.constraints.Min;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import vk.haveplace.database.entities.Role;
-import vk.haveplace.services.AdminBookingReadService;
-import vk.haveplace.services.AdminBookingWriteService;
-import vk.haveplace.services.AdminService;
+import vk.haveplace.services.admin.AdminBookingReadService;
+import vk.haveplace.services.admin.AdminBookingWriteService;
+import vk.haveplace.services.admin.AdminService;
 import vk.haveplace.services.objects.dto.AdminDTO;
 import vk.haveplace.services.objects.requests.*;
 
