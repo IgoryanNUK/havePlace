@@ -14,9 +14,12 @@ import vk.haveplace.exceptions.BookingNotFound;
 import vk.haveplace.exceptions.BookingUpdateError;
 import vk.haveplace.exceptions.WrongClient;
 import vk.haveplace.services.mappers.BookingMapper;
-import vk.haveplace.services.objects.dto.BookingSimpleDTO;
+import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.requests.BookingRequest;
 import vk.haveplace.services.objects.requests.ClientRequest;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ClientBookingWriteService {
@@ -35,32 +38,28 @@ public class ClientBookingWriteService {
         this.eventService = eventService;
     }
 
-    private BookingSimpleDTO checkUpdateResult(int updated, int bookingId) {
-        if (updated == 1) {
-            entityManager.clear();
-            BookingEntity entity = bookingRepository.findFirstById(bookingId).orElseThrow();
-            return BookingMapper.getSimpleDTOFromEntity(entity);
-        } else {
-            throw new BookingUpdateError(updated);
-        }
-    }
-
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public BookingSimpleDTO setNewBooking(BookingRequest booking) {
+    public BookingDTO book(BookingRequest booking) {
+        List<Integer> idList = booking.getIdList();
+
         ClientRequest client = booking.getClient();
-
         ClientEntity clientEntity = clientService.getEntityByRequest(client);
+        int updated = 0;
+        for (Integer id : idList) {
+            updated += bookingRepository.saveNew(id, clientEntity, booking.getDevice(),
+                    booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
+        }
 
-        int updated = bookingRepository.saveNew(booking.getId(), clientEntity, booking.getDevice(),
-                booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
-
-        if (updated == 1) {
+        if (updated == idList.size()) {
             entityManager.clear();
-            BookingEntity entity = bookingRepository.findFirstById(booking.getId()).orElseThrow();
-
-            eventService.bookingEvent(entity, clientEntity, OperationType.BOOK, null);
-            return BookingMapper.getSimpleDTOFromEntity(entity);
+            List<BookingEntity> entityList = new ArrayList<>(2);
+            for (Integer id : idList) {
+                BookingEntity entity = bookingRepository.findFirstById(id).orElseThrow(() -> new BookingNotFound("id = " + id));
+                entityList.add(entity);
+                eventService.bookingEvent(entity, clientEntity, OperationType.BOOK, null);
+            }
+            return BookingMapper.getDTOFromEntity(entityList);
         } else {
             throw new BookingUpdateError(updated);
         }
@@ -70,21 +69,30 @@ public class ClientBookingWriteService {
      * После обновления статус бронирования меняется на NEW.
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public BookingSimpleDTO update(BookingRequest booking) {
+    public BookingDTO update(BookingRequest booking) {
         ClientRequest client = booking.getClient();
         ClientEntity clientEntity = clientService.getEntityByRequest(client);
 
-        validateAccess(clientEntity, booking.getId());
+        List<Integer> idList = booking.getIdList();
 
-        int updated = bookingRepository.update(booking.getId(), clientEntity, booking.getDevice(),
-                booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
+        int updated = 0;
+        for (Integer id : idList) {
+            validateAccess(clientEntity, id);
+            updated = bookingRepository.update(id, clientEntity, booking.getDevice(),
+                    booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
+        }
 
-        if (updated == 1) {
+
+        if (updated == booking.getIdList().size()) {
             entityManager.clear();
-            BookingEntity entity = bookingRepository.findFirstById(booking.getId()).orElseThrow();
 
-            eventService.bookingEvent(entity, clientEntity, OperationType.UPDATE, null);
-            return BookingMapper.getSimpleDTOFromEntity(entity);
+            List<BookingEntity> entityList = new ArrayList<>(2);
+            for (Integer id : idList) {
+                BookingEntity entity = bookingRepository.findFirstById(id).orElseThrow();
+                entityList.add(entity);
+                eventService.bookingEvent(entity, clientEntity, OperationType.UPDATE, null);
+            }
+            return BookingMapper.getDTOFromEntity(entityList);
         } else {
             throw new BookingUpdateError(updated);
         }
@@ -103,16 +111,21 @@ public class ClientBookingWriteService {
 
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public boolean remove(int id, ClientRequest client) {;
+    public boolean remove(List<Integer> idList, ClientRequest client) {;
         ClientEntity clientEntity = clientService.getEntityByRequest(client);
 
-        validateAccess(clientEntity, id);
+        int updated = 0;
+        for (Integer id : idList) {
+            validateAccess(clientEntity, id);
 
-        int updated = bookingRepository.cancel(id, clientEntity);
+            updated += bookingRepository.cancel(id, clientEntity);
+        }
 
-        if (updated == 1) {
-            eventService.bookingEvent(bookingRepository.findById(id).orElseThrow(() -> new BookingNotFound("id = " + id)),
-                    clientEntity, OperationType.CANCEL, null);
+        if (updated == idList.size()) {
+            for (Integer id : idList) {
+                eventService.bookingEvent(bookingRepository.findById(id).orElseThrow(() -> new BookingNotFound("id = " + id)),
+                        clientEntity, OperationType.CANCEL, null);
+            }
             return true;
         } else {
             throw new BookingUpdateError(updated);

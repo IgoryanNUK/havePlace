@@ -6,13 +6,14 @@ import org.springframework.web.bind.annotation.*;
 import vk.haveplace.services.ClientBookingReadService;
 import vk.haveplace.services.ClientBookingWriteService;
 import vk.haveplace.services.objects.TimeSlot;
+import vk.haveplace.services.objects.dto.BookingDTO;
+import vk.haveplace.services.objects.dto.BookingFreeAllDayDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
-import vk.haveplace.services.objects.dto.BookingSimpleDTO;
 import vk.haveplace.services.objects.requests.BookingRequest;
 import vk.haveplace.services.objects.requests.ClientRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
+import vk.haveplace.services.objects.requests.RemoveRequest;
 
-import java.sql.Time;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -30,18 +31,18 @@ public class ClientController {
     }
 
     @PostMapping("/book")
-    public BookingSimpleDTO book(@RequestBody @Validated BookingRequest booking) {
-        return bookingWriteService.setNewBooking(booking);
+    public BookingDTO book(@RequestBody @Validated BookingRequest booking) {
+        return bookingWriteService.book(booking);
     }
 
     @PostMapping("/update")
-    public BookingSimpleDTO update(@RequestBody @Validated BookingRequest booking) {
+    public BookingDTO update(@RequestBody @Validated BookingRequest booking) {
         return bookingWriteService.update(booking);
     }
 
-    @DeleteMapping("/{id}")
-    public boolean remove(@PathVariable int id, @RequestBody ClientRequest client) {
-        return bookingWriteService.remove(id, client);
+    @DeleteMapping("")
+    public boolean remove(@RequestBody RemoveRequest req) {
+        return bookingWriteService.remove(req.getIdList(), req.getClient());
     }
 
     @GetMapping("/timeSlots")
@@ -54,8 +55,13 @@ public class ClientController {
         return bookingReadService.getFreeBookings(dateAndTime);
     }
 
+    @GetMapping("/bookings/{date}")
+    public Map<String, BookingFreeAllDayDTO> getFreeAllDayBookings(@PathVariable LocalDate date) {
+        return bookingReadService.getFreeBookingForAllDay(date);
+    }
+
     @GetMapping("/my/{vkId}")
-    public List<BookingSimpleDTO> getMyBookings(@PathVariable Long vkId) {
+    public List<BookingDTO> getMyBookings(@PathVariable Long vkId) {
         return bookingReadService.getBookingsByClient(vkId);
     }
 }

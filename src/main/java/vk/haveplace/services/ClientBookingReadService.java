@@ -8,12 +8,13 @@ import vk.haveplace.database.entities.BookingEntity;
 import vk.haveplace.database.entities.ClientEntity;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.services.mappers.BookingMapper;
+import vk.haveplace.services.mappers.LocationMapper;
 import vk.haveplace.services.objects.DateAndTimesDTO;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.TimeSlotWithPrice;
+import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.dto.BookingFreeAllDayDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
-import vk.haveplace.services.objects.dto.BookingSimpleDTO;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
 
 import java.sql.Date;
@@ -85,19 +86,26 @@ public class ClientBookingReadService {
     public Map<String, BookingFreeAllDayDTO> getFreeBookingForAllDay(LocalDate date) {
         List<BookingEntity> entityList = bookingRepository.findFree(Date.valueOf(date));
 
-        Map<LocationEntity, Integer> checkMap = new HashMap();
+        Map<LocationEntity, List<Integer>> checkMap = new HashMap<>();
         Map<String, BookingFreeAllDayDTO> map = new HashMap<>();
         for (BookingEntity entity : entityList) {
             LocationEntity locationEntity = entity.getLocation();
 
             if (checkMap.containsKey(locationEntity)) {
-                map.put(locationEntity.getName(), BookingMapper.get)
+                map.put(locationEntity.getName(),
+                        new BookingFreeAllDayDTO(checkMap.get(locationEntity), LocationMapper.getDTOFromEntity(locationEntity)));
+            } else {
+                List<Integer> idList = new ArrayList<>(2);
+                idList.add(entity.getId());
+                checkMap.put(locationEntity, idList);
             }
         }
+
+        return map;
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public List<BookingSimpleDTO> getBookingsByClient(Long vkId) {
+    public List<BookingDTO> getBookingsByClient(Long vkId) {
         ClientEntity clientEntity = clientService.getEntityByVkId(vkId);
 
         if (clientEntity == null) {
@@ -106,9 +114,21 @@ public class ClientBookingReadService {
 
         List<BookingEntity> entityList = bookingRepository.findAllByClientOrderById(clientEntity);
 
-        List<BookingSimpleDTO> result = new ArrayList<>(entityList.size());
+        List<BookingDTO> result = new ArrayList<>(entityList.size());
+        Map<Date, BookingEntity> checkMap = new HashMap<>();
         for (BookingEntity entity : entityList) {
-            result.add(BookingMapper.getSimpleDTOFromEntity(entity));
+            List<BookingEntity> enList = new ArrayList<>(2);
+            enList.add(entity);
+
+            Date date = entity.getDate();
+            if (checkMap.containsKey(date) &&
+                checkMap.get(date).getLocation().equals(entity.getLocation())) {
+                enList.add(checkMap.get(date));
+            } else {
+                checkMap.put(date, entity);
+            }
+
+            result.add(BookingMapper.getDTOFromEntity(enList));
         }
 
         return result;

@@ -1,27 +1,14 @@
 package vk.haveplace.services.mappers;
 
 import vk.haveplace.database.entities.BookingEntity;
+import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
-import vk.haveplace.services.objects.dto.BookingSimpleDTO;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookingMapper {
-
-    public static BookingSimpleDTO getSimpleDTOFromEntity(BookingEntity entity) {
-        BookingSimpleDTO dto = new BookingSimpleDTO();
-
-        dto.setId(entity.getId());
-        dto.setDate(entity.getDate());
-        dto.setStartTime(entity.getStartTime());
-        dto.setEndTime(entity.getEndTime());
-        dto.setLocationName(entity.getLocation().getName());
-        dto.setNumberOfPlayers(entity.getNumberOfPlayers() == null ? 0 : entity.getNumberOfPlayers());
-        dto.setClient(entity.getClient() == null ? null : ClientMapper.getDTOFromEntity(entity.getClient()));
-        dto.setComments(entity.getComments());
-        dto.setStatus(entity.getStatus());
-
-        return dto;
-    }
 
     public static BookingFreeDTO getFreeDTOFromEntity(BookingEntity entity) {
         BookingFreeDTO dto = new BookingFreeDTO();
@@ -32,16 +19,32 @@ public class BookingMapper {
         return dto;
     }
 
-    public static BookingDTO getDTOFromEntity(BookingEntity entity) {
+    public static BookingDTO getDTOFromEntity(List<BookingEntity> entityList) {
         BookingDTO dto = new BookingDTO();
+        BookingEntity entity = entityList.getFirst();
 
-        dto.setId(entity.getId());
+        dto.setIdList(new ArrayList<>(2));
+        dto.setStartTime(entity.getStartTime());
+        dto.setEndTime(entity.getEndTime());
         dto.setLocation(LocationMapper.getDTOFromEntity(entity.getLocation()));
         dto.setNumberOfPlayers(entity.getNumberOfPlayers() == null ? 0 : entity.getNumberOfPlayers());
         dto.setClient(entity.getClient() == null ? null : ClientMapper.getDTOFromEntity(entity.getClient()));
         dto.setComments(entity.getComments());
         dto.setStatus(entity.getStatus());
-        dto.setAvailable(entity.getIsAvailable());
+
+        for (BookingEntity en : entityList) {
+            dto.getIdList().add(en.getId());
+        }
+
+        if (entityList.size() > 1) {
+            BookingEntity last = entityList.getLast();
+
+            dto.setStartTime(TimeSlot.min(dto.getStartTime(),
+                    last.getStartTime()));
+            dto.setEndTime(TimeSlot.max(dto.getEndTime(),
+                    last.getEndTime()));
+        }
+
 
         return dto;
     }

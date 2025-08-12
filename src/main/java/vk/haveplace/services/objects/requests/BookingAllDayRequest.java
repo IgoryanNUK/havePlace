@@ -1,17 +1,14 @@
 package vk.haveplace.services.objects.requests;
 
-
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class BookingRequest {
+public class BookingAllDayRequest {
     @NotNull
-    @NotEmpty
     private List<Integer> idList;
     @NotNull
     private ClientRequest client;
@@ -19,15 +16,4 @@ public class BookingRequest {
     @Min(1)
     private int numberOfPlayers;
     private String comments;
-
-    public String getComments() {
-        String pref;
-        if (idList.size() > 1) {
-            pref = "[НА ВЕСЬ ДЕНЬ] ";
-        } else {
-            pref = "";
-        }
-
-        return pref + comments;
-    }
 }

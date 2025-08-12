@@ -20,7 +20,7 @@ public class TimeSlot {
         return result;
     }
 
-    protected static Time max(Time time1, Time time2) {
+    public static Time max(Time time1, Time time2) {
         if (time1.compareTo(time2) > 0) {
             return time1;
         } else {
@@ -28,7 +28,7 @@ public class TimeSlot {
         }
     }
 
-    protected static Time min(Time time1, Time time2) {
+    public static Time min(Time time1, Time time2) {
         if (time1.compareTo(time2) > 0) {
             return time2;
         } else {
