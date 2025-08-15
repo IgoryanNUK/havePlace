@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TimeSlotWithPrice extends TimeSlot {
-    private int price;
+    private Integer price;
 
     public TimeSlotWithPrice(TimeSlot timeSlot, Integer price) {
         this.setStart(timeSlot.getStart());

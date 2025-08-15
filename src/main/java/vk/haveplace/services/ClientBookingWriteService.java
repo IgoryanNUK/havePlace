@@ -1,6 +1,7 @@
 package vk.haveplace.services;
 
 import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -21,6 +22,7 @@ import vk.haveplace.services.objects.requests.ClientRequest;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ClientBookingWriteService {
 
@@ -57,7 +59,11 @@ public class ClientBookingWriteService {
             for (Integer id : idList) {
                 BookingEntity entity = bookingRepository.findFirstById(id).orElseThrow(() -> new BookingNotFound("id = " + id));
                 entityList.add(entity);
-                eventService.bookingEvent(entity, clientEntity, OperationType.BOOK, null);
+                try {
+                    eventService.bookingEvent(entity, entity.getClient(), OperationType.BOOK, null);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
             }
             return BookingMapper.getDTOFromEntity(entityList);
         } else {
@@ -78,7 +84,7 @@ public class ClientBookingWriteService {
         int updated = 0;
         for (Integer id : idList) {
             validateAccess(clientEntity, id);
-            updated = bookingRepository.update(id, clientEntity, booking.getDevice(),
+            updated += bookingRepository.update(id, clientEntity, booking.getDevice(),
                     booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
         }
 
@@ -90,7 +96,11 @@ public class ClientBookingWriteService {
             for (Integer id : idList) {
                 BookingEntity entity = bookingRepository.findFirstById(id).orElseThrow();
                 entityList.add(entity);
-                eventService.bookingEvent(entity, clientEntity, OperationType.UPDATE, null);
+                try {
+                    eventService.bookingEvent(entity, clientEntity, OperationType.UPDATE, null);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
             }
             return BookingMapper.getDTOFromEntity(entityList);
         } else {
@@ -123,8 +133,12 @@ public class ClientBookingWriteService {
 
         if (updated == idList.size()) {
             for (Integer id : idList) {
-                eventService.bookingEvent(bookingRepository.findById(id).orElseThrow(() -> new BookingNotFound("id = " + id)),
+                try {
+                    eventService.bookingEvent(bookingRepository.findById(id).orElseThrow(() -> new BookingNotFound("id = " + id)),
                         clientEntity, OperationType.CANCEL, null);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
             }
             return true;
         } else {

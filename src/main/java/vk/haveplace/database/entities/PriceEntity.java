@@ -1,16 +1,21 @@
 package vk.haveplace.database.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
+import vk.haveplace.services.objects.TimeSlot;
 
 import java.sql.Time;
 
 @Entity
 @Table(name = "prices")
 @Data
+@IdClass(TimeSlot.class)
 public class PriceEntity {
-    private Time startTime;
-    private Time endTime;
+    @Id
+    @Column(name = "start_time")
+    private Time start;
+    @Id
+    @Column(name = "end_time")
+    private Time end;
     private Integer price;
 }

@@ -74,7 +74,7 @@ public class AdminService {
             entity = adminRepository.saveAndFlush(entity);
             return AdminMapper.getDTOFromEntity(entity);
         } else {
-            throw new AdminNotFound(adminId);
+            throw new AdminNotFound("id = " + adminId);
         }
     }
 }

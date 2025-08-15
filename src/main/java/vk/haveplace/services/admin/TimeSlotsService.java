@@ -68,8 +68,10 @@ public class TimeSlotsService {
             for(LocationEntity location : locationRepository.findAll()) {
                 RegularEventEntity entity = regEvents.stream()
                         .filter(e -> e.getLocation().equals(location)
-                                && e.getStartTime().equals(timeSlot.getStart())
-                                && e.getEndTime().equals(timeSlot.getEnd()))
+                                && ( (e.getStartTime().equals(timeSlot.getStart())
+                                && e.getEndTime().compareTo(timeSlot.getEnd()) >= 0)
+                                || (e.getStartTime().compareTo(timeSlot.getStart()) <= 0
+                                && e.getEndTime().equals(timeSlot.getEnd()) ) ) )
                         .findFirst().orElse(null);
                 totalCount += setNewTimeSlot(Date.valueOf(d), timeSlot, location, entity);
             }
@@ -94,6 +96,7 @@ public class TimeSlotsService {
             slot.setNumberOfPlayers(regEvent.getNumberOfPlayers());
             slot.setComments(regEvent.getName());
             slot.setStatus(BookingStatus.CONFIRMED);
+            slot.setDevice("[AUTOMATICALLY]");
             slot.setIsAvailable(false);
         }
 

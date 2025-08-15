@@ -1,15 +1,15 @@
 package vk.haveplace.exceptions;
 
 public class AdminNotFound extends RuntimeException {
-    private Integer id;
+    private final String value;
 
-    public AdminNotFound(Integer id) {
-        super("Не найден админ с id ");
-        this.id = id;
+    public AdminNotFound(String value) {
+        super("Не найден админ с данными: ");
+        this.value = value;
     }
 
     @Override
     public String getMessage() {
-        return super.getMessage() + id;
+        return super.getMessage() + value;
     }
 }

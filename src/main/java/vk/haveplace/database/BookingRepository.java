@@ -85,4 +85,7 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
     List<BookingEntity> findAllByDateAndStartTimeAndEndTime(Date date, Time startTime, Time endTime);
 
     List<BookingEntity> findAllByClientOrderById(ClientEntity clientEntity);
+
+    List<BookingEntity> findAllByDate(Date date);
+
 }

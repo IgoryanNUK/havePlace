@@ -41,7 +41,7 @@ public class ClientController {
     }
 
     @DeleteMapping("")
-    public boolean remove(@RequestBody RemoveRequest req) {
+    public boolean remove(@RequestBody @Validated RemoveRequest req) {
         return bookingWriteService.remove(req.getIdList(), req.getClient());
     }
 
@@ -53,11 +53,6 @@ public class ClientController {
     @GetMapping("/bookings")
     public Map<String, BookingFreeDTO> getFreeBookings(@RequestBody @Validated DateAndTimesRequest dateAndTime) {
         return bookingReadService.getFreeBookings(dateAndTime);
-    }
-
-    @GetMapping("/bookings/{date}")
-    public Map<String, BookingFreeAllDayDTO> getFreeAllDayBookings(@PathVariable LocalDate date) {
-        return bookingReadService.getFreeBookingForAllDay(date);
     }
 
     @GetMapping("/my/{vkId}")

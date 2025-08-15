@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import vk.haveplace.services.admin.AdminBookingReadService;
 import vk.haveplace.services.admin.AdminBookingWriteService;
 import vk.haveplace.services.admin.TimeSlotsService;
+import vk.haveplace.services.objects.FailsCount;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.requests.AdminRequest;
@@ -50,13 +51,20 @@ public class AdminController {
         return bookingReadService.getTimeSlots();
     }
 
-    @PostMapping("/confirm/{bookingId}")
-    public Boolean confirm(@PathVariable int bookingId, @RequestBody AdminRequest admin) {
-        return bookingWriteService.confirmBooking(bookingId, admin);
+    @PostMapping("/confirm/{bookingId}/{adminVkId}")
+    public Boolean confirm(@PathVariable int bookingId, @PathVariable long adminVkId) {
+        return bookingWriteService.confirmBooking(bookingId, adminVkId);
     }
 
-    @PostMapping("/lock/{bookingId}")
-    public Boolean lock(@PathVariable int bookingId, @RequestBody AdminRequest admin) {
-        return bookingWriteService.lock(bookingId, admin);
+    @PostMapping("/lock/{bookingId}/{adminVkId}")
+    public Boolean lock(@PathVariable int bookingId, @PathVariable long adminVkId) {
+        return bookingWriteService.lock(bookingId, adminVkId);
     }
+
+    @PostMapping("/bookEvent/{id}")
+    public FailsCount bookRegularEvent(@PathVariable int id) {
+        return new FailsCount(bookingWriteService.bookRegularEvent(id));
+    }
+
+
 }

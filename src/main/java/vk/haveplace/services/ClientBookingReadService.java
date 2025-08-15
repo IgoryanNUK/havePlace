@@ -9,11 +9,11 @@ import vk.haveplace.database.entities.ClientEntity;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.services.mappers.BookingMapper;
 import vk.haveplace.services.mappers.LocationMapper;
+import vk.haveplace.services.objects.DateAndLocation;
 import vk.haveplace.services.objects.DateAndTimesDTO;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.TimeSlotWithPrice;
 import vk.haveplace.services.objects.dto.BookingDTO;
-import vk.haveplace.services.objects.dto.BookingFreeAllDayDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
 
@@ -74,26 +74,32 @@ public class ClientBookingReadService {
         List<BookingEntity> entityList = bookingRepository.findFree(Date.valueOf(dateAndTimes.getDate()),
                 dateAndTimes.getStartTime(), dateAndTimes.getEndTime());
 
-        Map<String, BookingFreeDTO> result = new HashMap<>(3);
-        for (BookingEntity entity : entityList) {
-            result.put(entity.getLocation().getName(), BookingMapper.getFreeDTOFromEntity(entity));
-        }
+        if (entityList.isEmpty()) {
+            return getFreeBookingForAllDay(dateAndTimes.getDate());
+        } else {
+            Map<String, BookingFreeDTO> result = new HashMap<>(3);
+            for (BookingEntity entity : entityList) {
+                result.put(entity.getLocation().getName(), BookingMapper.getFreeDTOFromEntity(entity));
+            }
 
-        return result;
+            return result;
+        }
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public Map<String, BookingFreeAllDayDTO> getFreeBookingForAllDay(LocalDate date) {
+    public Map<String, BookingFreeDTO> getFreeBookingForAllDay(LocalDate date) {
         List<BookingEntity> entityList = bookingRepository.findFree(Date.valueOf(date));
 
         Map<LocationEntity, List<Integer>> checkMap = new HashMap<>();
-        Map<String, BookingFreeAllDayDTO> map = new HashMap<>();
+        Map<String, BookingFreeDTO> map = new HashMap<>();
         for (BookingEntity entity : entityList) {
             LocationEntity locationEntity = entity.getLocation();
 
             if (checkMap.containsKey(locationEntity)) {
+                List<Integer> idList = checkMap.get(locationEntity);
+                idList.add(entity.getId());
                 map.put(locationEntity.getName(),
-                        new BookingFreeAllDayDTO(checkMap.get(locationEntity), LocationMapper.getDTOFromEntity(locationEntity)));
+                        new BookingFreeDTO(idList, LocationMapper.getDTOFromEntity(locationEntity)));
             } else {
                 List<Integer> idList = new ArrayList<>(2);
                 idList.add(entity.getId());
@@ -103,6 +109,7 @@ public class ClientBookingReadService {
 
         return map;
     }
+
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public List<BookingDTO> getBookingsByClient(Long vkId) {
@@ -114,21 +121,21 @@ public class ClientBookingReadService {
 
         List<BookingEntity> entityList = bookingRepository.findAllByClientOrderById(clientEntity);
 
-        List<BookingDTO> result = new ArrayList<>(entityList.size());
-        Map<Date, BookingEntity> checkMap = new HashMap<>();
+        Map<DateAndLocation, List<BookingEntity>> checkMap = new HashMap<>();
         for (BookingEntity entity : entityList) {
-            List<BookingEntity> enList = new ArrayList<>(2);
-            enList.add(entity);
-
-            Date date = entity.getDate();
-            if (checkMap.containsKey(date) &&
-                checkMap.get(date).getLocation().equals(entity.getLocation())) {
-                enList.add(checkMap.get(date));
+            DateAndLocation key = new DateAndLocation(entity.getDate(), entity.getLocation());
+            if (checkMap.containsKey(key)) {
+                checkMap.get(key).add(entity);
             } else {
-                checkMap.put(date, entity);
+                List<BookingEntity> list = new ArrayList<>(2);
+                list.add(entity);
+                checkMap.put(key, list);
             }
+        }
 
-            result.add(BookingMapper.getDTOFromEntity(enList));
+        List<BookingDTO> result = new ArrayList<>(checkMap.size());
+        for (List<BookingEntity> bookingList : checkMap.values()) {
+            result.add(BookingMapper.getDTOFromEntity(bookingList));
         }
 
         return result;

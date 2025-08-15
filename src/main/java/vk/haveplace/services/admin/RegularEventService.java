@@ -9,6 +9,7 @@ import vk.haveplace.database.entities.ClientEntity;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.database.entities.RegularEventEntity;
 import vk.haveplace.exceptions.RegularEventBusy;
+import vk.haveplace.exceptions.RegularEventNotFound;
 import vk.haveplace.services.ClientService;
 import vk.haveplace.services.mappers.RegularEventMapper;
 import vk.haveplace.services.objects.dto.RegularEventDTO;
@@ -102,5 +103,11 @@ public class RegularEventService {
         }
 
         return list;
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public RegularEventDTO getById(int id) {
+        RegularEventEntity entity = repository.findById(id).orElseThrow(() -> new RegularEventNotFound("id = " + id));
+        return RegularEventMapper.getDTOFromEntity(entity);
     }
 }

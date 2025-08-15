@@ -42,7 +42,7 @@ public class ClientService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public ClientEntity getEntityByVkId(Long vkId) {
-        return clientRepository.findByVkId(vkId).orElseThrow(() -> null);
+        return clientRepository.findByVkId(vkId).orElse(null);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)

@@ -29,7 +29,7 @@ public class PriceService {
 
         Map<TimeSlot, Integer> map = new HashMap<>();
         for (PriceEntity entity : list) {
-            TimeSlot timeSlot = new TimeSlot(entity.getStartTime(), entity.getEndTime());
+            TimeSlot timeSlot = new TimeSlot(entity.getStart(), entity.getEnd());
 
             map.put(timeSlot, entity.getPrice());
         }
