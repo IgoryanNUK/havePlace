@@ -15,6 +15,7 @@ import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.requests.AdminRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
 
+import java.sql.Time;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +42,10 @@ public class AdminController {
         return new ResponseEntity<>(ans, HttpStatus.CREATED);
     }
 
-    @GetMapping("/bookings")
-    public Map<String, BookingDTO> getAllBookings(@RequestBody @Validated DateAndTimesRequest dateAndTimes) {
-        return bookingReadService.getAllBookings(dateAndTimes);
+    @GetMapping("/bookings/{date}/{startTime}/{endTime}")
+    public Map<String, BookingDTO> getAllBookings(@PathVariable LocalDate date, @PathVariable Time startTime,
+                                                  @PathVariable Time endTime) {
+        return bookingReadService.getAllBookings(new DateAndTimesRequest(date, startTime, endTime));
     }
 
     @GetMapping("/timeSlots")

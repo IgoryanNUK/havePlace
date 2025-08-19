@@ -8,6 +8,8 @@ import vk.haveplace.services.admin.AdminService;
 import vk.haveplace.services.objects.dto.AdminDTO;
 import vk.haveplace.services.objects.requests.*;
 
+import java.sql.Time;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -55,9 +57,10 @@ public class ManageController {
         return bookingWriteService.setAdminShift(req.getAdminId(), req.getShift());
     }
 
-    @GetMapping("/shift")
-    public AdminDTO getAdminByShift(@RequestBody @Validated DateAndTimesRequest shift) {
-        return bookingReadService.getAdminByShift(shift);
+    @GetMapping("/shift/{date}/{startTime}/{endTime}")
+    public AdminDTO getAdminByShift(@PathVariable LocalDate date, @PathVariable Time startTime,
+                                    @PathVariable Time endTime) {
+        return bookingReadService.getAdminByShift(new DateAndTimesRequest(date, startTime, endTime));
     }
 
 }

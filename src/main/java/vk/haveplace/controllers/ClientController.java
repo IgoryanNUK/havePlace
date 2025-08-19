@@ -14,7 +14,9 @@ import vk.haveplace.services.objects.requests.ClientRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
 import vk.haveplace.services.objects.requests.RemoveRequest;
 
+import java.sql.Time;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -50,9 +52,10 @@ public class ClientController {
         return bookingReadService.getFreeTimeSlots();
     }
 
-    @GetMapping("/bookings")
-    public Map<String, BookingFreeDTO> getFreeBookings(@RequestBody @Validated DateAndTimesRequest dateAndTime) {
-        return bookingReadService.getFreeBookings(dateAndTime);
+    @GetMapping("/bookings/{date}/{startTime}/{endTime}")
+    public Map<String, BookingFreeDTO> getFreeBookings(@PathVariable LocalDate date, @PathVariable Time startTime,
+                                                       @PathVariable Time endTime) {
+        return bookingReadService.getFreeBookings(new DateAndTimesRequest(date, startTime, endTime));
     }
 
     @GetMapping("/my/{vkId}")
