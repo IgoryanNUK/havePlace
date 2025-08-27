@@ -2,7 +2,6 @@ package vk.haveplace.database.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import vk.haveplace.services.mappers.BookingMapper;
 
 import java.sql.Date;
 import java.sql.Time;

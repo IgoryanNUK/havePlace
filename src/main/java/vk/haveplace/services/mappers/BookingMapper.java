@@ -1,12 +1,9 @@
 package vk.haveplace.services.mappers;
 
 import vk.haveplace.database.entities.BookingEntity;
-import vk.haveplace.database.entities.RegularEventEntity;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
-import vk.haveplace.services.objects.dto.RegularEventDTO;
-import vk.haveplace.services.objects.requests.BookingRequest;
 
 import java.util.ArrayList;
 import java.util.List;

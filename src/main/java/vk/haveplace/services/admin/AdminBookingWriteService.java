@@ -65,6 +65,7 @@ public class AdminBookingWriteService {
         BookingEntity entity = bookingRepository.findFirstById(bookingId).orElseThrow(() -> new BookingNotFound("id = "+bookingId));
 
         entity.setIsAvailable(!entity.getIsAvailable());
+        entity.setStatus(entity.getIsAvailable() ? BookingStatus.FREE : BookingStatus.LOCKED);
 
         AdminEntity admin = adminRepository.findByVkId(adminVkId).orElseThrow(() -> new AdminNotFound("vkId = " + adminVkId));
 
