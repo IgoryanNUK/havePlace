@@ -42,6 +42,18 @@ public class AdminBookingReadService {
     }
 
     @Transactional
+    public List<BookingDTO> getNew() {
+        List<BookingEntity> entityList = bookingRepository.findNew();
+
+        List<BookingDTO> list = new ArrayList<>(entityList.size());
+        for (BookingEntity entity : entityList) {
+            list.add(BookingMapper.getDTOFromEntity(entity));
+        }
+
+        return list;
+    }
+
+    @Transactional
     public Map<LocalDate, List<TimeSlot>> getTimeSlots() {
         LocalDate endDate = LocalDate.now().plusWeeks(BOOKING_CHECK_WEEKS_PERIOD);
 

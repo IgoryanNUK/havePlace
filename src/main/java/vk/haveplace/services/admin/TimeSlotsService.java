@@ -50,6 +50,10 @@ public class TimeSlotsService {
             startDate = LocalDate.now();
         }
 
+        if (startDate.isAfter(endDate)) {
+            return 0;
+        }
+
         List<RegularEventEntity> regEvents = regularEventRepository.findAll();
 
         int totalCount = startDate.plusDays(1).datesUntil(endDate.plusDays(1))

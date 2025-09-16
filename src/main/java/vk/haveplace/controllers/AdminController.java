@@ -48,6 +48,11 @@ public class AdminController {
         return bookingReadService.getAllBookings(new DateAndTimesRequest(date, startTime, endTime));
     }
 
+    @GetMapping("/new")
+    public List<BookingDTO> getNew() {
+        return bookingReadService.getNew();
+    }
+
     @GetMapping("/timeSlots")
     public Map<LocalDate, List<TimeSlot>> getTimeSlots() {
         return bookingReadService.getTimeSlots();

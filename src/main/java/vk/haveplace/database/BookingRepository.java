@@ -82,6 +82,12 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
     )
     List<BookingEntity> findFree(Date date);
 
+    @Query(
+            "select b from BookingEntity b " +
+                    "WHERE b.status = 'NEW'"
+    )
+    List<BookingEntity> findNew();
+
     List<BookingEntity> findAllByDateAndStartTimeAndEndTime(Date date, Time startTime, Time endTime);
 
     List<BookingEntity> findAllByClientOrderById(ClientEntity clientEntity);
