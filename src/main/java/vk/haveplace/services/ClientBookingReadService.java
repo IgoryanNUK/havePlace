@@ -9,10 +9,7 @@ import vk.haveplace.database.entities.ClientEntity;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.services.mappers.BookingMapper;
 import vk.haveplace.services.mappers.LocationMapper;
-import vk.haveplace.services.objects.DateAndLocation;
-import vk.haveplace.services.objects.DateAndTimesDTO;
-import vk.haveplace.services.objects.TimeSlot;
-import vk.haveplace.services.objects.TimeSlotWithPrice;
+import vk.haveplace.services.objects.*;
 import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
@@ -40,11 +37,12 @@ public class ClientBookingReadService {
     public Map<LocalDate, List<TimeSlot>> getFreeTimeSlots() {
         LocalDate endDate = LocalDate.now().plusWeeks(ALLOWED_BOOKING_PERIOD);
 
-        List<DateAndTimesDTO> entityList = bookingRepository.findFreeTimeSlotsUntil(Date.valueOf(endDate));
+        List<LocationDateAndTimesDTO> entityList = bookingRepository.findFreeTimeSlotsWithLocationUntil(Date.valueOf(endDate));
 
         Map<LocalDate, List<TimeSlot>> map = new TreeMap<>();
+        Map<LocalDate, Set<Integer>> slotsToLocations = new TreeMap<>();
         Map<TimeSlot, Integer> prices = priceService.getPriceMap();
-        for (DateAndTimesDTO dto : entityList) {
+        for (LocationDateAndTimesDTO dto : entityList) {
             TimeSlot key = new TimeSlot(dto.getStartTime(), dto.getEndTime());
             TimeSlot timeSlot = new TimeSlotWithPrice(key, prices.get(key));
 
@@ -52,16 +50,30 @@ public class ClientBookingReadService {
             if (map.containsKey(date)) {
                 List<TimeSlot> list = map.get(date);
 
-                list.add(timeSlot);
+                if (!list.contains(timeSlot)) {
+                    list.add(timeSlot);
+                }
 
                 //добавления слота на весь день
-                timeSlot = TimeSlot.unite(list.getFirst(), list.getLast());
-                timeSlot = new TimeSlotWithPrice(timeSlot, prices.get(timeSlot));
-                list.add(timeSlot);
+                Set<Integer> idSet = slotsToLocations.get(date);
+                if (idSet.contains(dto.getLocation().getId())) {
+                    timeSlot = TimeSlot.unite(list.getFirst(), list.getLast());
+                    timeSlot = new TimeSlotWithPrice(timeSlot, prices.get(timeSlot));
+
+                    if (!list.contains(timeSlot)) {
+                        list.add(timeSlot);
+                    }
+                } else {
+                    idSet.add(dto.getLocation().getId());
+                }
             } else {
                 List<TimeSlot> list = new ArrayList<>(3);
                 list.add(timeSlot);
                 map.put(date, list);
+
+                Set<Integer> idSet = new TreeSet<>();
+                idSet.add(dto.getLocation().getId());
+                slotsToLocations.put(date, idSet);
             }
         }
 

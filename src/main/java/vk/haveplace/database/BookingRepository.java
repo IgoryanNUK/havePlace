@@ -9,6 +9,7 @@ import vk.haveplace.database.entities.BookingEntity;
 import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.database.entities.ClientEntity;
 import vk.haveplace.services.objects.DateAndTimesDTO;
+import vk.haveplace.services.objects.LocationDateAndTimesDTO;
 
 import java.sql.Time;
 import java.util.Date;
@@ -63,6 +64,12 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
                     "WHERE b.isAvailable = true and b.date < :date"
     )
     List<DateAndTimesDTO> findFreeTimeSlotsUntil(@Param("date") Date endDate);
+
+    @Query(
+            "select distinct new vk.haveplace.services.objects.LocationDateAndTimesDTO(b.date, b.startTime, b.endTime, b.location) from BookingEntity b " +
+                    "WHERE b.isAvailable = true and b.date < :date"
+    )
+    List<LocationDateAndTimesDTO> findFreeTimeSlotsWithLocationUntil(@Param("date") Date endDate);
 
     @Query(
             "select distinct new vk.haveplace.services.objects.DateAndTimesDTO(b.date, b.startTime, b.endTime) from BookingEntity b " +

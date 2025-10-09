@@ -22,7 +22,7 @@ import java.util.*;
 @Service
 public class AdminBookingReadService {
     private final BookingRepository bookingRepository;
-    private final int BOOKING_CHECK_WEEKS_PERIOD = 10;
+    private final int BOOKING_CHECK_WEEKS_PERIOD = 50;
 
     public AdminBookingReadService(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
