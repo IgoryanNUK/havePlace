@@ -12,8 +12,11 @@ import vk.haveplace.services.admin.TimeSlotsService;
 import vk.haveplace.services.objects.FailsCount;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
+import vk.haveplace.services.objects.requests.AdminBookingRequest;
 import vk.haveplace.services.objects.requests.AdminRequest;
+import vk.haveplace.services.objects.requests.BookingRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
+import vk.haveplace.services.objects.requests.RemoveRequest;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -37,7 +40,8 @@ public class AdminController {
     }
 
     @PostMapping("/timeSlots/{endDate}")
-    public ResponseEntity<Integer> setTimeSlots(@RequestBody @NotNull Map<String, List<TimeSlot>> timeMap, @PathVariable LocalDate endDate) {
+    public ResponseEntity<Integer> setTimeSlots(@RequestBody @NotNull Map<String, List<TimeSlot>> timeMap,
+                                                @PathVariable LocalDate endDate) {
         Integer ans = timeSlotsService.setTimeSlotsForPeriod(endDate, timeMap);
         return new ResponseEntity<>(ans, HttpStatus.CREATED);
     }
@@ -73,5 +77,25 @@ public class AdminController {
         return new FailsCount(bookingWriteService.bookRegularEvent(id));
     }
 
+    @GetMapping("/bookings/{startDate}/{endDate}")
+    public Map<LocalDate, Map<String, Map<String, BookingDTO>>> getBookingsForPeriod(
+            @PathVariable LocalDate startDate, @PathVariable LocalDate endDate
+    ) {
+        return bookingReadService.getBookingsForPeriod(startDate, endDate);
+    }
 
+    @PostMapping("/update")
+    public BookingDTO update(@RequestBody @Validated AdminBookingRequest booking) {
+        return bookingWriteService.update(booking);
+    }
+
+    @PostMapping("/book")
+    public BookingDTO book(@RequestBody @Validated AdminBookingRequest booking) {
+        return bookingWriteService.book(booking);
+    }
+
+    @DeleteMapping("")
+    public boolean remove(@RequestBody @Validated RemoveRequest removeRequest) {
+        return bookingWriteService.remove(removeRequest.getIdList(), removeRequest.getClient(), removeRequest.getAdminVkId());
+    }
 }

@@ -56,4 +56,14 @@ public class EventEntity {
         this.operationType = operationType;
         this.comments = comments;
     }
+
+    public EventEntity(BookingEntity booking, ClientEntity client, AdminEntity admin, OperationType operationType,
+                       String comments) {
+        this.time = Timestamp.valueOf(LocalDateTime.now());
+        this.booking = booking;
+        this.client = client;
+        this.admin = admin;
+        this.operationType = operationType;
+        this.comments = comments;
+    }
 }

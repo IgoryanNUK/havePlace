@@ -18,6 +18,8 @@ import vk.haveplace.services.objects.requests.DateAndTimesRequest;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminBookingReadService {
@@ -87,5 +89,27 @@ public class AdminBookingReadService {
         AdminEntity entity = bookingList.getFirst().getAdmin();
 
         return AdminMapper.getDTOFromEntity(entity);
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public Map<LocalDate, Map<String, Map<String, BookingDTO>>> getBookingsForPeriod(LocalDate startTime, LocalDate endTime) {
+        List<BookingEntity> bookingEntityList = bookingRepository
+                .findAllFromStartDateToEndDateOrderByDate(Date.valueOf(startTime), Date.valueOf(endTime));
+
+        Map<LocalDate, Map<String, Map<String, BookingDTO>>> result = new TreeMap<>();
+        return bookingEntityList.stream()
+                .map(BookingMapper::getDTOFromEntity)
+                .collect(Collectors.groupingBy(
+                        BookingDTO::getDate,
+                        TreeMap::new,
+                        Collectors.groupingBy(
+                                b -> b.getStartTime() + "-" + b.getEndTime(),
+                                TreeMap::new,
+                                Collectors.toMap(
+                                        b -> b.getLocation().getName(),
+                                        Function.identity()
+                                )
+                        )
+                ));
     }
 }

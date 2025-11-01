@@ -60,12 +60,6 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
     Optional<BookingEntity> findFirstById(int id);
 
     @Query(
-            "select distinct new vk.haveplace.services.objects.DateAndTimesDTO(b.date, b.startTime, b.endTime) from BookingEntity b " +
-                    "WHERE b.isAvailable = true and b.date < :date"
-    )
-    List<DateAndTimesDTO> findFreeTimeSlotsUntil(@Param("date") Date endDate);
-
-    @Query(
             "select distinct new vk.haveplace.services.objects.LocationDateAndTimesDTO(b.date, b.startTime, b.endTime, b.location) from BookingEntity b " +
                     "WHERE b.isAvailable = true and b.date < :date"
     )
@@ -106,4 +100,10 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
 
     List<BookingEntity> findAllByDate(Date date);
 
+    @Query(
+            "select b from BookingEntity b " +
+                    "WHERE b.date <= :endDate and b.date >= :startDate " +
+                    "ORDER BY b.date"
+    )
+    List<BookingEntity> findAllFromStartDateToEndDateOrderByDate(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }

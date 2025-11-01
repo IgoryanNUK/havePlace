@@ -34,4 +34,12 @@ public class EventService {
 
         return eventRepository.saveAndFlush(event);
     }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE,
+            propagation = Propagation.REQUIRES_NEW)
+    public void bookingEvent(BookingEntity booking, ClientEntity client, AdminEntity admin, OperationType operationType, String comments) {
+        EventEntity event = new EventEntity(booking, client, admin, operationType, comments);
+
+        eventRepository.saveAndFlush(event);
+    }
 }

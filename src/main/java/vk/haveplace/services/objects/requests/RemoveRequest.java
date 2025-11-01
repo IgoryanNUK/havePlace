@@ -13,4 +13,5 @@ public class RemoveRequest {
     private List<Integer> idList;
     @NotNull
     private ClientRequest client;
+    private Long adminVkId;
 }

@@ -20,7 +20,7 @@ public class ClientService {
         this.clientRepository = clientRepository;
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ClientEntity getEntityByRequest(ClientRequest clientRequest) {
         Optional<ClientEntity> opt = clientRepository.findByVkId(clientRequest.getVkId());
         ClientEntity entity;

@@ -77,4 +77,9 @@ public class AdminService {
             throw new AdminNotFound("id = " + adminId);
         }
     }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public AdminEntity getEntityByVkId(Long vkId) {
+        return adminRepository.findByVkId(vkId).orElseThrow(() -> new AdminNotFound("vkId = " + vkId));
+    }
 }

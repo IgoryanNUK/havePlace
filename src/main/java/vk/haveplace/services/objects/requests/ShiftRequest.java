@@ -7,7 +7,7 @@ import org.aspectj.weaver.ast.Not;
 @Data
 public class ShiftRequest {
     @NotNull
-    private int adminId;
+    private long adminId;
     @NotNull
     private DateAndTimesRequest shift;
 }

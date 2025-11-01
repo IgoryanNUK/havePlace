@@ -1,5 +1,6 @@
 package vk.haveplace.services.admin;
 
+import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -10,14 +11,22 @@ import vk.haveplace.database.entities.*;
 import vk.haveplace.exceptions.AdminNotFound;
 import vk.haveplace.exceptions.BookingNotFound;
 import vk.haveplace.exceptions.BookingUpdateError;
+import vk.haveplace.services.ClientService;
 import vk.haveplace.services.EventService;
+import vk.haveplace.services.mappers.BookingMapper;
 import vk.haveplace.services.mappers.ClientMapper;
+import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.dto.RegularEventDTO;
+import vk.haveplace.services.objects.requests.AdminBookingRequest;
+import vk.haveplace.services.objects.requests.BookingRequest;
+import vk.haveplace.services.objects.requests.ClientRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -28,14 +37,23 @@ public class AdminBookingWriteService {
     private final AdminRepository adminRepository;
     private final EventService eventService;
     private final RegularEventService regularEventService;
+    private final ClientService clientService;
+    private final EntityManager entityManager;
+    private final AdminService adminService;
 
     public AdminBookingWriteService(BookingRepository bookingRepository,
                                     AdminRepository adminRepository, EventService eventService,
-                                    RegularEventService regularEventService) {
+                                    RegularEventService regularEventService,
+                                    ClientService clientService,
+                                    EntityManager entityManager,
+                                    AdminService adminService) {
         this.bookingRepository = bookingRepository;
         this.adminRepository = adminRepository;
         this.eventService = eventService;
         this.regularEventService = regularEventService;
+        this.clientService = clientService;
+        this.entityManager = entityManager;
+        this.adminService = adminService;
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
@@ -45,7 +63,7 @@ public class AdminBookingWriteService {
         if (entity.getStatus().equals(BookingStatus.NEW)) {
             entity.setStatus(BookingStatus.CONFIRMED);
 
-            AdminEntity admin = adminRepository.findByVkId(adminVkId).orElseThrow(() -> new AdminNotFound("vkId = " + adminVkId));
+            AdminEntity admin = adminService.getEntityByVkId(adminVkId);
 
             try {
                 eventService.bookingEvent(entity, admin, OperationType.CONFIRM, null);
@@ -67,7 +85,7 @@ public class AdminBookingWriteService {
         entity.setIsAvailable(!entity.getIsAvailable());
         entity.setStatus(entity.getIsAvailable() ? BookingStatus.FREE : BookingStatus.LOCKED);
 
-        AdminEntity admin = adminRepository.findByVkId(adminVkId).orElseThrow(() -> new AdminNotFound("vkId = " + adminVkId));
+        AdminEntity admin = adminService.getEntityByVkId(adminVkId);
 
         try {
             eventService.bookingEvent(entity, admin, OperationType.LOCK, null);
@@ -79,8 +97,8 @@ public class AdminBookingWriteService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Boolean setAdminShift(Integer adminId, DateAndTimesRequest dateAndTime) {
-        AdminEntity admin = adminRepository.findById(adminId).orElseThrow(() -> new AdminNotFound("id = " + adminId));
+    public Boolean setAdminShift(Long adminId, DateAndTimesRequest dateAndTime) {
+        AdminEntity admin = adminService.getEntityByVkId(adminId);
 
         List<BookingEntity> bookingList = bookingRepository.findAllByDateAndStartTimeAndEndTime(
                 Date.valueOf(dateAndTime.getDate()), dateAndTime.getStartTime(), dateAndTime.getEndTime()
@@ -138,5 +156,98 @@ public class AdminBookingWriteService {
         }
 
         return failsCount.get();
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public BookingDTO update(AdminBookingRequest booking) {
+        ClientRequest client = booking.getClient();
+        ClientEntity clientEntity = clientService.getEntityByRequest(client);
+
+        List<Integer> idList = booking.getIdList();
+
+        int updated = 0;
+        for (Integer id : idList) {
+            updated += bookingRepository.update(id, clientEntity, booking.getDevice(),
+                    booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
+        }
+
+
+        if (updated == booking.getIdList().size()) {
+            entityManager.clear();
+
+            List<BookingEntity> entityList = new ArrayList<>(2);
+            for (Integer id : idList) {
+                BookingEntity entity = bookingRepository.findFirstById(id).orElseThrow();
+                entityList.add(entity);
+
+                try {
+                    AdminEntity admin = adminService.getEntityByVkId(booking.getAdminVkId());
+                    eventService.bookingEvent(entity, clientEntity, admin, OperationType.UPDATE, null);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+            return BookingMapper.getDTOFromEntity(entityList);
+        } else {
+            throw new BookingUpdateError(updated);
+        }
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public boolean remove(List<Integer> idList, ClientRequest client, Long adminVkId) {;
+        ClientEntity clientEntity = clientService.getEntityByRequest(client);
+
+        int updated = 0;
+        for (Integer id : idList) {
+            updated += bookingRepository.cancel(id, clientEntity);
+        }
+
+        if (updated == idList.size()) {
+            for (Integer id : idList) {
+
+                try {
+                    AdminEntity admin = adminService.getEntityByVkId(adminVkId);
+                    eventService.bookingEvent(bookingRepository.findById(id).orElseThrow(() -> new BookingNotFound("id = " + id)),
+                            clientEntity, admin, OperationType.CANCEL, null);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+            return true;
+        } else {
+            throw new BookingUpdateError(updated);
+        }
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public BookingDTO book(AdminBookingRequest booking) {
+        List<Integer> idList = booking.getIdList();
+
+        ClientRequest client = booking.getClient();
+        ClientEntity clientEntity = clientService.getEntityByRequest(client);
+        int updated = 0;
+        for (Integer id : idList) {
+            updated += bookingRepository.saveNew(id, clientEntity, booking.getDevice(),
+                    booking.getNumberOfPlayers(), booking.getComments(), BookingStatus.NEW);
+        }
+
+        if (updated == idList.size()) {
+            entityManager.clear();
+            List<BookingEntity> entityList = new ArrayList<>(2);
+            for (Integer id : idList) {
+                BookingEntity entity = bookingRepository.findFirstById(id).orElseThrow(() -> new BookingNotFound("id = " + id));
+                entityList.add(entity);
+
+                try {
+                    AdminEntity admin = adminService.getEntityByVkId(booking.getAdminVkId());
+                    eventService.bookingEvent(entity, entity.getClient(), admin, OperationType.BOOK, null);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+            return BookingMapper.getDTOFromEntity(entityList);
+        } else {
+            throw new BookingUpdateError(updated);
+        }
     }
 }

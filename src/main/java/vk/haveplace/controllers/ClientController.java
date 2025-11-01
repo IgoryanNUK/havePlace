@@ -37,16 +37,6 @@ public class ClientController {
         return bookingWriteService.book(booking);
     }
 
-    @PostMapping("/update")
-    public BookingDTO update(@RequestBody @Validated BookingRequest booking) {
-        return bookingWriteService.update(booking);
-    }
-
-    @DeleteMapping("")
-    public boolean remove(@RequestBody @Validated RemoveRequest req) {
-        return bookingWriteService.remove(req.getIdList(), req.getClient());
-    }
-
     @GetMapping("/timeSlots")
     public Map<LocalDate, List<TimeSlot>> getFreeTimeSlots() {
         return bookingReadService.getFreeTimeSlots();
