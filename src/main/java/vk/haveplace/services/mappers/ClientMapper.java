@@ -31,6 +31,10 @@ public class ClientMapper {
     }
 
     public static ClientDTO getDTOFromEntity(ClientEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
         ClientDTO dto = new ClientDTO();
 
         dto.setId(entity.getId());

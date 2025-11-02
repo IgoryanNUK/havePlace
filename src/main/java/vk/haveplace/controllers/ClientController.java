@@ -5,10 +5,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import vk.haveplace.services.ClientBookingReadService;
 import vk.haveplace.services.ClientBookingWriteService;
+import vk.haveplace.services.ClientService;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.dto.BookingFreeAllDayDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
+import vk.haveplace.services.objects.dto.ClientDTO;
 import vk.haveplace.services.objects.requests.BookingRequest;
 import vk.haveplace.services.objects.requests.ClientRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
@@ -25,11 +27,14 @@ import java.util.Map;
 public class ClientController {
     private final ClientBookingWriteService bookingWriteService;
     private final ClientBookingReadService bookingReadService;
+    private final ClientService clientService;
 
     public ClientController(ClientBookingWriteService bookingWriteService,
-                            ClientBookingReadService bookingReadService) {
+                            ClientBookingReadService bookingReadService,
+                            ClientService clientService) {
         this.bookingWriteService = bookingWriteService;
         this.bookingReadService = bookingReadService;
+        this.clientService = clientService;
     }
 
     @PostMapping("/book")
@@ -51,5 +56,10 @@ public class ClientController {
     @GetMapping("/my/{vkId}")
     public List<BookingDTO> getMyBookings(@PathVariable Long vkId) {
         return bookingReadService.getBookingsByClient(vkId);
+    }
+
+    @GetMapping("/me/{vkId}")
+    public ClientDTO getMe(@PathVariable Long vkId) {
+        return clientService.getDtoByVkId(vkId);
     }
 }

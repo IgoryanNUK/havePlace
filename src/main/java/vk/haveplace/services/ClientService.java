@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vk.haveplace.database.ClientRepository;
 import vk.haveplace.database.entities.ClientEntity;
 import vk.haveplace.services.mappers.ClientMapper;
+import vk.haveplace.services.objects.dto.ClientDTO;
 import vk.haveplace.services.objects.requests.ClientRequest;
 
 import java.util.Optional;
@@ -43,6 +44,10 @@ public class ClientService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public ClientEntity getEntityByVkId(Long vkId) {
         return clientRepository.findByVkId(vkId).orElse(null);
+    }
+
+    public ClientDTO getDtoByVkId(Long vkId) {
+        return ClientMapper.getDTOFromEntity(clientRepository.findByVkId(vkId).orElse(null));
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
