@@ -96,7 +96,6 @@ public class AdminBookingReadService {
         List<BookingEntity> bookingEntityList = bookingRepository
                 .findAllFromStartDateToEndDateOrderByDate(Date.valueOf(startTime), Date.valueOf(endTime));
 
-        Map<LocalDate, Map<String, Map<String, BookingDTO>>> result = new TreeMap<>();
         return bookingEntityList.stream()
                 .map(BookingMapper::getDTOFromEntity)
                 .collect(Collectors.groupingBy(

@@ -21,7 +21,6 @@ public class AdminBookingRequest {
     private ClientRequest client;
     private String device;
     @Min(1)
-    @Max(20)
     private int numberOfPlayers;
     private String comments;
     @NotNull
