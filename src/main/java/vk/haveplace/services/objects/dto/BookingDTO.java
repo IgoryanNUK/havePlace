@@ -18,4 +18,5 @@ public class BookingDTO {
     private ClientDTO client;
     private String comments;
     private BookingStatus status;
+    private Integer restDayBookingsId;
 }

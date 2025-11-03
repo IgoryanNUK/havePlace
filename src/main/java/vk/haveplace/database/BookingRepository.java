@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import vk.haveplace.database.entities.BookingEntity;
 import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.database.entities.ClientEntity;
+import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.services.objects.DateAndTimesDTO;
 import vk.haveplace.services.objects.LocationDateAndTimesDTO;
 
@@ -106,4 +107,6 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
                     "ORDER BY b.date"
     )
     List<BookingEntity> findAllFromStartDateToEndDateOrderByDate(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    List<BookingEntity> findAllByDateAndLocation(Date date, LocationEntity location);
 }

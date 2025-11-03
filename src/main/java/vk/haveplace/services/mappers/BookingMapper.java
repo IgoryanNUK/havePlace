@@ -1,12 +1,15 @@
 package vk.haveplace.services.mappers;
 
 import vk.haveplace.database.entities.BookingEntity;
+import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
 
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class BookingMapper {
 
@@ -30,6 +33,18 @@ public class BookingMapper {
             dto.getIdList().add(entity.getId());
         }
         dto.setLocation(LocationMapper.getDTOFromEntity(entityList.getFirst().getLocation()));
+
+        return dto;
+    }
+
+    public static BookingDTO getDTOFromEntity(BookingEntity entity, Function<Integer, Integer> getRestDayBookingId) {
+        BookingDTO dto = getDTOFromEntity(entity);
+
+        if(dto.getStatus().equals(BookingStatus.FREE) &&
+                (dto.getDate().getDayOfWeek().equals(DayOfWeek.SUNDAY) ||
+                        dto.getDate().getDayOfWeek().equals(DayOfWeek.SATURDAY))) {
+            dto.setRestDayBookingsId(getRestDayBookingId.apply(entity.getId()));
+        }
 
         return dto;
     }

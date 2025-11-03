@@ -37,7 +37,7 @@ public class AdminBookingReadService {
 
         Map<String, BookingDTO> result = new HashMap<>(entityList.size());
         for (BookingEntity entity : entityList) {
-            result.put(entity.getLocation().getName(), BookingMapper.getDTOFromEntity(entity));
+            result.put(entity.getLocation().getName(), BookingMapper.getDTOFromEntity(entity, this::getRestDayBookingId));
         }
 
         return result;
@@ -92,12 +92,20 @@ public class AdminBookingReadService {
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
+    private Integer getRestDayBookingId(Integer id) {
+        BookingEntity entity =  bookingRepository.findFirstById(id).orElseThrow(() -> new BookingNotFound("id = " + id));
+        return bookingRepository.findAllByDateAndLocation(entity.getDate(), entity.getLocation())
+                .stream().filter(b -> !Objects.equals(b.getId(), id) && b.getIsAvailable())
+                .map(BookingEntity::getId).findFirst().orElse(null);
+    }
+
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public Map<LocalDate, Map<String, Map<String, BookingDTO>>> getBookingsForPeriod(LocalDate startTime, LocalDate endTime) {
         List<BookingEntity> bookingEntityList = bookingRepository
                 .findAllFromStartDateToEndDateOrderByDate(Date.valueOf(startTime), Date.valueOf(endTime));
 
         return bookingEntityList.stream()
-                .map(BookingMapper::getDTOFromEntity)
+                .map(b -> BookingMapper.getDTOFromEntity(b, this::getRestDayBookingId))
                 .collect(Collectors.groupingBy(
                         BookingDTO::getDate,
                         TreeMap::new,

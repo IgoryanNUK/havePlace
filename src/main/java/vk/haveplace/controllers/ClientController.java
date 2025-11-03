@@ -8,17 +8,13 @@ import vk.haveplace.services.ClientBookingWriteService;
 import vk.haveplace.services.ClientService;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
-import vk.haveplace.services.objects.dto.BookingFreeAllDayDTO;
 import vk.haveplace.services.objects.dto.BookingFreeDTO;
 import vk.haveplace.services.objects.dto.ClientDTO;
 import vk.haveplace.services.objects.requests.BookingRequest;
-import vk.haveplace.services.objects.requests.ClientRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
-import vk.haveplace.services.objects.requests.RemoveRequest;
 
 import java.sql.Time;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
