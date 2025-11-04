@@ -12,6 +12,7 @@ import vk.haveplace.exceptions.RegularEventBusy;
 import vk.haveplace.exceptions.RegularEventNotFound;
 import vk.haveplace.services.ClientService;
 import vk.haveplace.services.mappers.RegularEventMapper;
+import vk.haveplace.services.objects.dto.BookingsRegularEventDto;
 import vk.haveplace.services.objects.dto.RegularEventDTO;
 import vk.haveplace.services.objects.requests.RegularEventRequest;
 import vk.haveplace.services.objects.requests.RegularEventUpdateRequest;
@@ -26,28 +27,34 @@ public class RegularEventService {
     private final LocationRepository locationRepository;
     private final ClientService clientService;
     private final RegularEventRepository repository;
+    private final AdminBookingWriteService bookingWriteService;
+    private final AdminBookingReadService bookingReadService;
 
     public RegularEventService(LocationRepository locationRepository, ClientService clientService,
-                               RegularEventRepository repository) {
+                               RegularEventRepository repository,
+                               AdminBookingWriteService bookingWriteService,
+                               AdminBookingReadService bookingReadService) {
         this.locationRepository = locationRepository;
         this.clientService = clientService;
         this.repository = repository;
+        this.bookingWriteService = bookingWriteService;
+        this.bookingReadService = bookingReadService;
     }
 
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public RegularEventDTO add(RegularEventRequest request) {
+    public BookingsRegularEventDto add(RegularEventRequest request) {
         LocationEntity locationEntity = locationRepository.findById(request.getLocationId()).orElseThrow();
-
-        validateRequest(request, locationEntity);
-
 
         ClientEntity clientEntity = clientService.getEntityByRequest(request.getClient());
         RegularEventEntity entity = RegularEventMapper.getEntityFromRequest(request, clientEntity, locationEntity);
 
-        RegularEventEntity answer = repository.save(entity);
+        repository.save(entity);
 
-        return RegularEventMapper.getDTOFromEntity(answer);
+        BookingsRegularEventDto check = bookingReadService.checkRegularEventBookings(request);
+        bookingWriteService.bookRegularEvent(entity, check.getOk(), request.getAdminVkId());
+
+        return check;
     }
 
     private void validateRequest(RegularEventRequest request, LocationEntity location) {
@@ -69,27 +76,33 @@ public class RegularEventService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public RegularEventDTO update(RegularEventUpdateRequest request) {
+    public BookingsRegularEventDto update(RegularEventUpdateRequest request) {
         LocationEntity locationEntity = locationRepository.findById(request.getLocationId()).orElseThrow();
-
-        validateRequest(request, locationEntity);
 
         ClientEntity clientEntity = clientService.getEntityByRequest(request.getClient());
         RegularEventEntity entity = RegularEventMapper.getEntityFromRequest(request, clientEntity, locationEntity);
+        repository.save(entity);
 
-        RegularEventEntity answer = repository.save(entity);
+        RegularEventEntity old = repository.findById(request.getId())
+                .orElseThrow(() -> new RegularEventNotFound("id = " + request.getId()));
+        bookingWriteService.deleteRegularEvent(old);
 
-        return RegularEventMapper.getDTOFromEntity(answer);
+        BookingsRegularEventDto check = bookingReadService.checkRegularEventBookings(request);
+        bookingWriteService.bookRegularEvent(entity, check.getOk(), request.getAdminVkId());
+
+        return check;
     }
 
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public Boolean remove(int id) {
-        if (repository.findById(id).isPresent()) {
-            repository.deleteById(id);
-            return true;
+    public int remove(int id) {
+        RegularEventEntity entity = repository.findById(id).orElse(null);
+        if (entity != null) {
+            int canceled = bookingWriteService.deleteRegularEvent(entity);
+            repository.delete(entity);
+            return canceled;
         } else {
-            return false;
+            return -1;
         }
     }
 

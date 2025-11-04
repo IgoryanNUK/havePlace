@@ -3,6 +3,7 @@ package vk.haveplace.database.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.sql.Date;
 import java.sql.Time;
 
 @Entity
@@ -11,6 +12,7 @@ import java.sql.Time;
 public class RegularEventEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="reg_event_id")
     private Integer id;
 
     private String name;
@@ -29,5 +31,6 @@ public class RegularEventEntity {
     private ClientEntity client;
 
     private Integer numberOfPlayers;
-
+    private Date startDate;
+    private Date endDate;
 }

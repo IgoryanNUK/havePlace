@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import vk.haveplace.services.admin.RegularEventService;
+import vk.haveplace.services.objects.dto.BookingsRegularEventDto;
 import vk.haveplace.services.objects.dto.RegularEventDTO;
 import vk.haveplace.services.objects.requests.RegularEventRequest;
 import vk.haveplace.services.objects.requests.RegularEventUpdateRequest;
@@ -22,17 +23,17 @@ public class RegularEventController {
     }
 
     @PostMapping("/add")
-    public RegularEventDTO addRegularEvent(@RequestBody RegularEventRequest request) {
+    public BookingsRegularEventDto addRegularEvent(@RequestBody @Validated RegularEventRequest request) {
         return regularEventService.add(request);
     }
 
     @PostMapping("/update")
-    public RegularEventDTO updateRegularEvent(@RequestBody @Validated RegularEventUpdateRequest request) {
+    public BookingsRegularEventDto updateRegularEvent(@RequestBody @Validated RegularEventUpdateRequest request) {
         return regularEventService.update(request);
     }
 
     @DeleteMapping("/{id}")
-    public boolean remove(@PathVariable int id) {
+    public int remove(@PathVariable int id) {
         return regularEventService.remove(id);
     }
 

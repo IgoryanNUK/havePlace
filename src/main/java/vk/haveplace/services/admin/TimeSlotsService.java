@@ -58,7 +58,9 @@ public class TimeSlotsService {
 
         int totalCount = startDate.plusDays(1).datesUntil(endDate.plusDays(1))
                 .mapToInt(d -> setTimeSlotsForDay(d, timeMap,
-                        regEvents.stream().filter(e -> e.getDayOfWeek().equals(d.getDayOfWeek().toString())).toList()))
+                        regEvents.stream().filter(e -> e.getDayOfWeek().equals(d.getDayOfWeek().toString()) &&
+                                d.isAfter(e.getStartDate().toLocalDate().minusDays(1)) &&
+                                d.isBefore(e.getEndDate().toLocalDate().plusDays(1))).toList()))
                 .sum();
 
         return totalCount;
@@ -102,6 +104,7 @@ public class TimeSlotsService {
             slot.setStatus(BookingStatus.CONFIRMED);
             slot.setDevice("[AUTOMATICALLY]");
             slot.setIsAvailable(false);
+            slot.setRegEvent(regEvent);
         }
 
         bookingRepository.save(slot);

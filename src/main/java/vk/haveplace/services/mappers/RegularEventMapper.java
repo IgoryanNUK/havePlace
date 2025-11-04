@@ -1,13 +1,13 @@
 package vk.haveplace.services.mappers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import vk.haveplace.database.entities.ClientEntity;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.database.entities.RegularEventEntity;
-import vk.haveplace.services.ClientService;
 import vk.haveplace.services.objects.dto.RegularEventDTO;
 import vk.haveplace.services.objects.requests.RegularEventRequest;
 import vk.haveplace.services.objects.requests.RegularEventUpdateRequest;
+
+import java.sql.Date;
 
 public class RegularEventMapper {
 
@@ -26,6 +26,8 @@ public class RegularEventMapper {
         entity.setDayOfWeek(request.getDayOfWeek());
         entity.setClient(clientEntity);
         entity.setLocation(locationEntity);
+        entity.setStartDate(Date.valueOf(request.getStartDate()));
+        entity.setEndDate(Date.valueOf(request.getEndDate()));
 
         return entity;
     }
@@ -41,6 +43,8 @@ public class RegularEventMapper {
         dto.setEndTime(entity.getEndTime());
         dto.setClient(ClientMapper.getDTOFromEntity(entity.getClient()));
         dto.setNumberOfPlayers(entity.getNumberOfPlayers());
+        dto.setStartDate(entity.getStartDate().toLocalDate());
+        dto.setEndDate(entity.getEndDate().toLocalDate());
 
         return dto;
     }

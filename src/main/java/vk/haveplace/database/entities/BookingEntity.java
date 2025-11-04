@@ -43,5 +43,9 @@ public class BookingEntity {
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 
+    @ManyToOne
+    @JoinColumn(name = "reg_event_id")
+    private RegularEventEntity regEvent;
+
     private Boolean isAvailable;
 }

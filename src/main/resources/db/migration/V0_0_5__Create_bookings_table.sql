@@ -11,5 +11,6 @@ create table if not exists bookings (
     comments varchar(200),
     status varchar(50) check(status in ('FREE', 'NEW', 'CONFIRMED', 'LOCKED')),
     is_available boolean default true,
+    reg_event_id int references regular_events(reg_event_id),
     unique(booking_date, booking_start_time, location_id)
 )

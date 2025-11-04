@@ -5,10 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import vk.haveplace.database.entities.BookingEntity;
-import vk.haveplace.database.entities.BookingStatus;
-import vk.haveplace.database.entities.ClientEntity;
-import vk.haveplace.database.entities.LocationEntity;
+import vk.haveplace.database.entities.*;
 import vk.haveplace.services.objects.DateAndTimesDTO;
 import vk.haveplace.services.objects.LocationDateAndTimesDTO;
 
@@ -30,6 +27,20 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
             "WHERE b.id = ?1 and b.isAvailable = true")
     int saveNew(int bookingId, ClientEntity client, String device, int numberOfPlayers, String comments, BookingStatus status);
 
+    @Modifying
+    @Query(
+            "update BookingEntity b set " +
+                    "b.client = ?2, " +
+                    "b.device = ?3, " +
+                    "b.numberOfPlayers = ?4, " +
+                    "b.comments = ?5, " +
+                    "b.status = ?6, " +
+                    "b.isAvailable = false, " +
+                    "b.regEvent = ?7 " +
+                    "WHERE b.id = ?1 and b.isAvailable = true"
+    )
+    int saveNew(int bookingId, ClientEntity client, String device, int numberOfPlayers, String comments, BookingStatus status, RegularEventEntity regEvent);
+
     @Modifying(flushAutomatically = true)
     @Query(
             "update BookingEntity b set "  +
@@ -50,10 +61,25 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
                     "b.numberOfPlayers = 0, " +
                     "b.comments = null, " +
                     "b.status = 'FREE', " +
-                    "b.isAvailable = true " +
+                    "b.isAvailable = true, " +
+                    "b.regEvent = null " +
                     "WHERE b.id = ?1 and b.client = ?2"
     )
     int cancel(int id, ClientEntity client);
+
+    @Modifying
+    @Query(
+            "update BookingEntity b set " +
+                    "b.client = null, " +
+                    "b.device = null, " +
+                    "b.numberOfPlayers = 0, " +
+                    "b.comments = null, " +
+                    "b.status = 'FREE', " +
+                    "b.isAvailable = true, " +
+                    "b.regEvent = null " +
+                    "WHERE b.regEvent = ?1 and b.date >= ?2"
+    )
+    int cancelReqularEventFrom(RegularEventEntity regEvent, Date date);
 
 
     Optional<BookingEntity> findFirstByOrderByDateDesc();

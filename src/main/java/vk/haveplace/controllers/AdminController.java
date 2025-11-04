@@ -12,11 +12,8 @@ import vk.haveplace.services.admin.TimeSlotsService;
 import vk.haveplace.services.objects.FailsCount;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.dto.BookingDTO;
-import vk.haveplace.services.objects.requests.AdminBookingRequest;
-import vk.haveplace.services.objects.requests.AdminRequest;
-import vk.haveplace.services.objects.requests.BookingRequest;
-import vk.haveplace.services.objects.requests.DateAndTimesRequest;
-import vk.haveplace.services.objects.requests.RemoveRequest;
+import vk.haveplace.services.objects.dto.BookingsRegularEventDto;
+import vk.haveplace.services.objects.requests.*;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -72,10 +69,16 @@ public class AdminController {
         return bookingWriteService.lock(bookingId, adminVkId);
     }
 
-    @PostMapping("/bookEvent/{id}")
-    public FailsCount bookRegularEvent(@PathVariable int id) {
-        return new FailsCount(bookingWriteService.bookRegularEvent(id));
+//    @PostMapping("/bookEvent/{id}")
+//    public FailsCount bookRegularEvent(@PathVariable int id) {
+//        return new FailsCount(bookingWriteService.bookRegularEvent(id));
+//    }
+
+    @PostMapping("/event/check")
+    public BookingsRegularEventDto check(@RequestBody @Validated RegularEventRequest request) {
+        return bookingReadService.checkRegularEventBookings(request);
     }
+
 
     @GetMapping("/bookings/{startDate}/{endDate}")
     public Map<LocalDate, Map<String, Map<String, BookingDTO>>> getBookingsForPeriod(

@@ -3,6 +3,7 @@ package vk.haveplace.services.objects.dto;
 import lombok.Data;
 
 import java.sql.Time;
+import java.time.LocalDate;
 
 @Data
 public class RegularEventDTO {
@@ -14,4 +15,6 @@ public class RegularEventDTO {
     private Time endTime;
     private ClientDTO client;
     private Integer numberOfPlayers;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

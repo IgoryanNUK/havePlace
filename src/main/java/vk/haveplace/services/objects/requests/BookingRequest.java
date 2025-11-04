@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
@@ -33,6 +32,10 @@ public class BookingRequest {
             pref = "";
         }
 
-        return pref + comments;
+        if (comments == null) {
+            return pref;
+        } else {
+            return pref + comments;
+        }
     }
 }
