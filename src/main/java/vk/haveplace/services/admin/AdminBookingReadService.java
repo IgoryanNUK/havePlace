@@ -128,12 +128,12 @@ public class AdminBookingReadService {
         BookingsRegularEventDto response;
 
         LocalDate startDate = request.getStartDate().isAfter(LocalDate.now().minusDays(1))
-                && request.getStartDate().equals(LocalDate.now().minusDays(1))
+                || request.getStartDate().equals(LocalDate.now().minusDays(1))
                 ? request.getStartDate()
                 : LocalDate.now();
 
 
-        if (request.getStartDate().isBefore(request.getEndDate())) {
+        if (request.getStartDate().isBefore(request.getEndDate().plusDays(1))) {
 
 
             List<LocalDate> dates = startDate.datesUntil(request.getEndDate().plusDays(1))
