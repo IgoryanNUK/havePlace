@@ -49,7 +49,7 @@ public class RegularEventService {
         ClientEntity clientEntity = clientService.getEntityByRequest(request.getClient());
         RegularEventEntity entity = RegularEventMapper.getEntityFromRequest(request, clientEntity, locationEntity);
 
-        repository.save(entity);
+        repository.saveAndFlush(entity);
 
         BookingsRegularEventDto check = bookingReadService.checkRegularEventBookings(request);
         bookingWriteService.bookRegularEvent(entity, check.getOk(), request.getAdminVkId());
