@@ -6,8 +6,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import vk.haveplace.database.PricesRepository;
 import vk.haveplace.database.entities.PriceEntity;
+import vk.haveplace.exceptions.PriceNotFound;
+import vk.haveplace.services.objects.LocationDateAndTimesDTO;
 import vk.haveplace.services.objects.TimeSlot;
 
+import java.sql.Date;
+import java.sql.Time;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,18 +27,23 @@ public class PriceService {
         this.pricesRepository = pricesRepository;
     }
 
+    public Integer getPrice(LocationDateAndTimesDTO dto) {
+        return getPrice(dto.getDate(), dto.getStartTime(), dto.getEndTime());
+    }
+
+    public Integer getPrice(Date date, TimeSlot timeSlot) {
+        return getPrice(date, timeSlot.getStart(), timeSlot.getEnd());
+    }
+
     @Transactional(isolation = Isolation.REPEATABLE_READ,
-    propagation = Propagation.REQUIRES_NEW)
-    public Map<TimeSlot, Integer> getPriceMap() {
-        List<PriceEntity> list = pricesRepository.findAll();
-
-        Map<TimeSlot, Integer> map = new HashMap<>();
-        for (PriceEntity entity : list) {
-            TimeSlot timeSlot = new TimeSlot(entity.getStart(), entity.getEnd());
-
-            map.put(timeSlot, entity.getPrice());
-        }
-
-        return map;
+            propagation = Propagation.REQUIRES_NEW)
+    public Integer getPrice(Date date, Time startTime, Time endTime) {
+        return pricesRepository.getPriceByDateAndTimeAndDayType(
+                date,
+                startTime,
+                endTime
+        ).orElseThrow(() -> new PriceNotFound(
+                "date: %s, start time: %s, end time: %s".formatted(date, startTime, endTime)
+        ));
     }
 }

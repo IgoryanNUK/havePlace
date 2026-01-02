@@ -41,10 +41,11 @@ public class ClientBookingReadService {
 
         Map<LocalDate, List<TimeSlot>> map = new TreeMap<>();
         Map<LocalDate, Set<Integer>> slotsToLocations = new TreeMap<>();
-        Map<TimeSlot, Integer> prices = priceService.getPriceMap();
         for (LocationDateAndTimesDTO dto : entityList) {
             TimeSlot key = new TimeSlot(dto.getStartTime(), dto.getEndTime());
-            TimeSlot timeSlot = new TimeSlotWithPrice(key, prices.get(key));
+            TimeSlot timeSlot = new TimeSlotWithPrice(
+                    key, priceService.getPrice(dto)
+            );
 
             LocalDate date = dto.getDate().toLocalDate();
             if (map.containsKey(date)) {
@@ -58,7 +59,7 @@ public class ClientBookingReadService {
                 Set<Integer> idSet = slotsToLocations.get(date);
                 if (idSet.contains(dto.getLocation().getId())) {
                     timeSlot = TimeSlot.unite(list.getFirst(), list.getLast());
-                    timeSlot = new TimeSlotWithPrice(timeSlot, prices.get(timeSlot));
+                    timeSlot = new TimeSlotWithPrice(timeSlot, priceService.getPrice(Date.valueOf(date), timeSlot));
 
                     if (!list.contains(timeSlot)) {
                         list.add(timeSlot);
