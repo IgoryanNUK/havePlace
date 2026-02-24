@@ -11,7 +11,7 @@ import vk.haveplace.database.entities.*;
 @Service
 public class EventService {
 
-    private EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
     @Autowired
     public EventService(EventRepository eventRepository) {

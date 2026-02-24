@@ -17,6 +17,8 @@ import vk.haveplace.services.objects.dto.RegularEventDTO;
 import vk.haveplace.services.objects.requests.RegularEventRequest;
 import vk.haveplace.services.objects.requests.RegularEventUpdateRequest;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -85,7 +87,7 @@ public class RegularEventService {
 
         RegularEventEntity old = repository.findById(request.getId())
                 .orElseThrow(() -> new RegularEventNotFound("id = " + request.getId()));
-        bookingWriteService.deleteRegularEvent(old);
+        bookingWriteService.cancelRegularEventFrom(old, Date.valueOf(LocalDate.now()));
 
         BookingsRegularEventDto check = bookingReadService.checkRegularEventBookings(request);
         bookingWriteService.bookRegularEvent(entity, check.getOk(), request.getAdminVkId());
@@ -98,7 +100,7 @@ public class RegularEventService {
     public int remove(int id) {
         RegularEventEntity entity = repository.findById(id).orElse(null);
         if (entity != null) {
-            int canceled = bookingWriteService.deleteRegularEvent(entity);
+            int canceled = bookingWriteService.cancelRegularEventFrom(entity, entity.getStartDate());
             repository.delete(entity);
             return canceled;
         } else {

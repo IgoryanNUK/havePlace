@@ -13,13 +13,10 @@ import vk.haveplace.exceptions.RegularEventBusy;
 import vk.haveplace.services.ClientService;
 import vk.haveplace.services.EventService;
 import vk.haveplace.services.mappers.BookingMapper;
-import vk.haveplace.services.mappers.RegularEventMapper;
 import vk.haveplace.services.objects.dto.BookingDTO;
-import vk.haveplace.services.objects.dto.BookingsRegularEventDto;
 import vk.haveplace.services.objects.requests.AdminBookingRequest;
 import vk.haveplace.services.objects.requests.ClientRequest;
 import vk.haveplace.services.objects.requests.DateAndTimesRequest;
-import vk.haveplace.services.objects.requests.RegularEventRequest;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -132,8 +129,8 @@ public class AdminBookingWriteService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public int deleteRegularEvent(RegularEventEntity entity) {
-        return bookingRepository.cancelReqularEventFrom(entity, Date.valueOf(LocalDate.now()));
+    public int cancelRegularEventFrom(RegularEventEntity entity, Date from) {
+        return bookingRepository.cancelReqularEventFrom(entity, from);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
