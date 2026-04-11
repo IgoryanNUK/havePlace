@@ -71,7 +71,7 @@ public class TimeSlotsService {
         int totalCount = 0;
 
         for(TimeSlot timeSlot : timeMap.get(d.getDayOfWeek().toString())) {
-            for(LocationEntity location : locationRepository.findAll()) {
+            for(LocationEntity location : locationRepository.findAllByIsExistingTrue()) {
                 RegularEventEntity entity = regEvents.stream()
                         .filter(e -> e.getLocation().equals(location)
                                 && ( (e.getStartTime().equals(timeSlot.getStart())

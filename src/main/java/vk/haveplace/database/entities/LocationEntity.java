@@ -20,4 +20,6 @@ public class LocationEntity {
     private int max_number_of_players;
 
     private String photos;
+
+    private boolean isExisting;
 }
