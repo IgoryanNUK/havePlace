@@ -112,4 +112,82 @@ public class TimeSlotsService {
         return 1;
     }
 
+    /**
+     * Добавляет таймслоты для дат в периоде, если для какого-то слота или локации
+     * записи еще не были созданы (дозаполнение существующих дат новыми локациями/слотами).
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public int addMissingTimeSlotsForPeriod(LocalDate endDate, Map<String, List<TimeSlot>> timeMap) {
+        LocalDate startDate;
+        try {
+            // Берем либо сегодняшний день, либо самую раннюю/позднюю дату, с которой хотим начать дозаполнение.
+            // Для безопасности и логики дозаполнения логично начать с LocalDate.now()
+            // или с первой даты, где потенциально могут быть пропуски.
+            startDate = LocalDate.now();
+        } catch (Exception e) {
+            startDate = LocalDate.now();
+        }
+
+        if (startDate.isAfter(endDate)) {
+            return 0;
+        }
+
+        List<RegularEventEntity> regEvents = regularEventRepository.findAll();
+        // Загружаем только существующие (активные) локации
+        List<LocationEntity> activeLocations = locationRepository.findAllByIsExistingTrue();
+
+        int totalCount = startDate.datesUntil(endDate.plusDays(1))
+                .mapToInt(d -> addMissingTimeSlotsForDay(d, timeMap, activeLocations,
+                        regEvents.stream().filter(e -> e.getDayOfWeek().equals(d.getDayOfWeek().toString()) &&
+                                d.isAfter(e.getStartDate().toLocalDate().minusDays(1)) &&
+                                d.isBefore(e.getEndDate().toLocalDate().plusDays(1))).toList()))
+                .sum();
+
+        return totalCount;
+    }
+
+    private int addMissingTimeSlotsForDay(LocalDate d, Map<String, List<TimeSlot>> timeMap,
+                                          List<LocationEntity> activeLocations,
+                                          List<RegularEventEntity> regEvents) {
+        List<TimeSlot> slotsForDay = timeMap.get(d.getDayOfWeek().toString());
+        if (slotsForDay == null || slotsForDay.isEmpty()) {
+            return 0;
+        }
+
+        int totalCount = 0;
+        Date sqlDate = Date.valueOf(d);
+
+        // Получаем все БРОНИРОВАНИЯ на этот день одним запросом, чтобы не спамить БД в цикле
+        List<BookingEntity> existingBookingsForDay = bookingRepository.findAllByDate(sqlDate);
+
+        for (TimeSlot timeSlot : slotsForDay) {
+            for (LocationEntity location : activeLocations) {
+
+                // Проверяем, существует ли уже слот для этой локации в это время
+                boolean alreadyExists = existingBookingsForDay.stream()
+                        .anyMatch(b -> b.getLocation().equals(location)
+                                && b.getStartTime().equals(timeSlot.getStart())
+                                && b.getEndTime().equals(timeSlot.getEnd()));
+
+                // Если слот уже есть, просто пропускаем эту итерацию
+                if (alreadyExists) {
+                    continue;
+                }
+
+                // Если слота нет — ищем, не попадает ли он под регулярное событие
+                RegularEventEntity entity = regEvents.stream()
+                        .filter(e -> e.getLocation().equals(location)
+                                && ( (e.getStartTime().equals(timeSlot.getStart())
+                                && e.getEndTime().compareTo(timeSlot.getEnd()) >= 0)
+                                || (e.getStartTime().compareTo(timeSlot.getStart()) <= 0
+                                && e.getEndTime().equals(timeSlot.getEnd()) ) ) )
+                        .findFirst().orElse(null);
+
+                // Вызываем ваш существующий метод (он помечен как REQUIRES_NEW, что изолирует транзакции)
+                totalCount += setNewTimeSlot(sqlDate, timeSlot, location, entity);
+            }
+        }
+
+        return totalCount;
+    }
 }

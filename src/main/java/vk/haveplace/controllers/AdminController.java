@@ -43,6 +43,13 @@ public class AdminController {
         return new ResponseEntity<>(ans, HttpStatus.CREATED);
     }
 
+    @PostMapping("/addTimeSlots/{endDate}")
+    public ResponseEntity<Integer> addTimeSlots(@RequestBody @NotNull Map<String, List<TimeSlot>> timeMap,
+                                                @PathVariable LocalDate endDate) {
+        Integer ans = timeSlotsService.addMissingTimeSlotsForPeriod(endDate, timeMap);
+        return new ResponseEntity<>(ans, HttpStatus.CREATED);
+    }
+
     @GetMapping("/bookings/{date}/{startTime}/{endTime}")
     public Map<String, BookingDTO> getAllBookings(@PathVariable LocalDate date, @PathVariable Time startTime,
                                                   @PathVariable Time endTime) {
