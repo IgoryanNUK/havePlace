@@ -135,4 +135,8 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Integer>
     List<BookingEntity> findAllFromStartDateToEndDateOrderByDate(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     List<BookingEntity> findAllByDateAndLocation(Date date, LocationEntity location);
+
+    @Modifying
+    @Query("DELETE FROM BookingEntity b WHERE b.id IN :ids")
+    int deleteAllByIdIn(@Param("ids") List<Integer> ids);
 }

@@ -12,13 +12,14 @@ import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.database.entities.RegularEventEntity;
 import vk.haveplace.services.ClientBookingWriteService;
+import vk.haveplace.services.objects.ConflictResponse;
 import vk.haveplace.services.objects.TimeSlot;
+import vk.haveplace.services.objects.TimeSlotResponse;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TimeSlotsService {
@@ -189,5 +190,74 @@ public class TimeSlotsService {
         }
 
         return totalCount;
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public Integer removeTimeSlotsForDay(LocalDate date,
+                                         List<TimeSlot> timeSlots) {
+        List<BookingEntity> existingBookingsForDay = bookingRepository.findAllByDate(Date.valueOf(date));
+
+        List<Integer> idsToDelete = new ArrayList<>();
+        for (TimeSlot timeSlot : timeSlots) {
+            idsToDelete.addAll(existingBookingsForDay.stream()
+                    .filter(e ->
+                            e.getStartTime().equals(timeSlot.getStart())
+                            && e.getEndTime().equals(timeSlot.getEnd())
+                    )
+                    .map(BookingEntity::getId)
+                    .toList());
+        }
+
+        return bookingRepository.deleteAllByIdIn(idsToDelete);
+    }
+
+    /**
+     * Добавляет временные слоты в конкретный день.
+     * Пропускает временной слот и возвращает конфликтный ответ, если есть хотя бы одна бронь с наложением времени.
+     *
+     * @param date
+     * @param timeSlots
+     * @return
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public Integer addTimeSlotsForDay(LocalDate date, List<TimeSlot> timeSlots) {
+        Date sqlDate = Date.valueOf(date);
+
+        int createdCount = 0;
+        ConflictResponse<TimeSlot> conflictResponse = null;
+
+        List<BookingEntity> existingBookingsForDay = bookingRepository.findAllByDate(sqlDate);
+
+        Set<LocationEntity> locations = existingBookingsForDay.stream()
+                .map(BookingEntity::getLocation)
+                .collect(Collectors.toSet());
+
+
+        for (TimeSlot timeSlot : timeSlots) {
+            boolean isExists = existingBookingsForDay.stream()
+                    .anyMatch(e ->
+                            (e.getStartTime().compareTo(timeSlot.getStart()) <= 0
+                            && e.getEndTime().compareTo(timeSlot.getStart()) > 0)
+                            || (e.getStartTime().compareTo(timeSlot.getEnd()) < 0
+                            && e.getEndTime().compareTo(timeSlot.getEnd()) >= 0)
+                    );
+
+            // conflict processing
+            if (isExists) {
+                if (conflictResponse == null) {
+                    conflictResponse = new ConflictResponse<>();
+                }
+
+                conflictResponse.addConflict(timeSlot);
+
+                continue;
+            }
+
+            for (LocationEntity location : locations) {
+                createdCount += setNewTimeSlot(sqlDate, timeSlot, location, null);
+            }
+        }
+
+        return createdCount;
     }
 }

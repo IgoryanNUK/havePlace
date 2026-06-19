@@ -36,6 +36,11 @@ public class AdminController {
         this.bookingWriteService = bookingWriteService;
     }
 
+    @GetMapping("/timeSlots")
+    public Map<LocalDate, List<TimeSlot>> getTimeSlots() {
+        return bookingReadService.getTimeSlots();
+    }
+
     @PostMapping("/timeSlots/{endDate}")
     public ResponseEntity<Integer> setTimeSlots(@RequestBody @NotNull Map<String, List<TimeSlot>> timeMap,
                                                 @PathVariable LocalDate endDate) {
@@ -43,11 +48,25 @@ public class AdminController {
         return new ResponseEntity<>(ans, HttpStatus.CREATED);
     }
 
-    @PostMapping("/addTimeSlots/{endDate}")
-    public ResponseEntity<Integer> addTimeSlots(@RequestBody @NotNull Map<String, List<TimeSlot>> timeMap,
+    @PostMapping("/timeSlots/add/missing/{endDate}")
+    public ResponseEntity<Integer> addMissingTimeSlots(@RequestBody @NotNull Map<String, List<TimeSlot>> timeMap,
                                                 @PathVariable LocalDate endDate) {
         Integer ans = timeSlotsService.addMissingTimeSlotsForPeriod(endDate, timeMap);
         return new ResponseEntity<>(ans, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/timeSlots/{date}")
+    public ResponseEntity<Integer> removeTimeSlot(@RequestBody @NotNull List<TimeSlot> timeSlots,
+                                  @PathVariable LocalDate date) {
+        Integer ans = timeSlotsService.removeTimeSlotsForDay(date, timeSlots);
+        return new ResponseEntity<>(ans, HttpStatus.OK);
+    }
+
+    @PostMapping("/timeSlots/add/{date}")
+    public ResponseEntity<Integer> addTimeSlots(@PathVariable LocalDate date,
+                                                @RequestBody @NotNull List<TimeSlot> timeSlots) {
+        Integer ans = timeSlotsService.addTimeSlotsForDay(date, timeSlots);
+        return new ResponseEntity<>(ans, HttpStatus.OK);
     }
 
     @GetMapping("/bookings/{date}/{startTime}/{endTime}")
@@ -59,11 +78,6 @@ public class AdminController {
     @GetMapping("/new")
     public List<BookingDTO> getNew() {
         return bookingReadService.getNew();
-    }
-
-    @GetMapping("/timeSlots")
-    public Map<LocalDate, List<TimeSlot>> getTimeSlots() {
-        return bookingReadService.getTimeSlots();
     }
 
     @PostMapping("/confirm/{bookingId}/{adminVkId}")
