@@ -15,9 +15,12 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17' # Поставь тут 11, 17 или 21 в зависимости от твоего проекта
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
+
+      - name: Build
+        run: mvn clean package -DskipTests
 
       - name: Copy JAR to Server
         uses: appleboy/scp-action@v0.1.7
@@ -28,9 +31,6 @@ jobs:
           source: "target/*.jar"
           target: "havePlace/apps"
           strip_components: 1
-
-      - name: Build
-        run: mvn clean package -DskipTests
 
       - name: Run Application via SSH
         uses: appleboy/ssh-action@v1.0.3
