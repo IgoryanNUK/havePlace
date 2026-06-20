@@ -1,29 +1,67 @@
-name: Deploy Spring Boot
+name: Deploy Have Place API
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Run deploy script via SSH
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17' # Поставь тут 11, 17 или 21 в зависимости от твоего проекта
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Copy JAR to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "target/*.jar"
+          target: "havePlace/apps"
+          strip_components: 1
+
+      - name: Build
+        run: mvn clean package -DskipTests
+
+      - name: Run Application via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd havePlace
+            cd havePlace/apps
             
-            git pull origin main
+            sudo truncate -s 0 application.log || true
             
-            (sudo pkill -f "spring-boot:run") || true
+            sudo nohup java -jar *.jar >> application.log 2>&1 &
             
-            sudo truncate -s 0 application.log
-            
-            sudo nohup sudo mvn spring-boot:run >> application.log 2>&1 < /dev/null &
-            
-            sleep 3
+            exit 0
+
+#      - name: Run deploy script via SSH
+#        uses: appleboy/ssh-action@v1.0.3
+#        with:
+#          host: ${{ secrets.SERVER_HOST }}
+#          username: ${{ secrets.SERVER_USERNAME }}
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          script: |
+#            cd havePlace
+#
+#            git pull origin main
+#
+#            (sudo pkill -f "spring-boot:run") || true
+#
+#            sudo truncate -s 0 application.log
+#
+#            sudo nohup sudo mvn spring-boot:run >> application.log 2>&1 < /dev/null &
+#
+#            sleep 3
