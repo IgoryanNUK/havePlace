@@ -24,4 +24,6 @@ jobs:
             
             sudo truncate -s 0 application.log
             
-            sudo nohup sudo mvn spring-boot:run >> application.log 2>&1 &
+            sudo nohup sudo mvn spring-boot:run >> application.log 2>&1 < /dev/null &
+            
+            sleep 3
