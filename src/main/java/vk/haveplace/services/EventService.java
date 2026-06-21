@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import vk.haveplace.database.EventRepository;
 import vk.haveplace.database.entities.*;
 
+import java.util.List;
+
 @Service
 public class EventService {
 
@@ -41,5 +43,15 @@ public class EventService {
         EventEntity event = new EventEntity(booking, client, admin, operationType, comments);
 
         eventRepository.saveAndFlush(event);
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void removeEventByBookingId(Integer bookingId) {
+        eventRepository.deleteByBookingId(bookingId);
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void removeEventByBookingIds(List<Integer> bookingIds) {
+        eventRepository.deleteByBookingIds(bookingIds);
     }
 }

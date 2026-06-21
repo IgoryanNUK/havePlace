@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import vk.haveplace.database.BookingRepository;
+import vk.haveplace.database.EventRepository;
 import vk.haveplace.database.LocationRepository;
 import vk.haveplace.database.RegularEventRepository;
 import vk.haveplace.database.entities.BookingEntity;
@@ -12,6 +13,7 @@ import vk.haveplace.database.entities.BookingStatus;
 import vk.haveplace.database.entities.LocationEntity;
 import vk.haveplace.database.entities.RegularEventEntity;
 import vk.haveplace.services.ClientBookingWriteService;
+import vk.haveplace.services.EventService;
 import vk.haveplace.services.objects.ConflictResponse;
 import vk.haveplace.services.objects.TimeSlot;
 import vk.haveplace.services.objects.TimeSlotResponse;
@@ -26,14 +28,14 @@ public class TimeSlotsService {
     private final LocationRepository locationRepository;
     private final BookingRepository bookingRepository;
     private final RegularEventRepository regularEventRepository;
-    private final ClientBookingWriteService bookingService;
+    private final EventService eventService;
 
     public TimeSlotsService(BookingRepository bookingRepository, LocationRepository locationRepository,
-                            RegularEventRepository regularEventRepository, ClientBookingWriteService bookingService) {
+                            RegularEventRepository regularEventRepository, EventService eventService) {
         this.bookingRepository = bookingRepository;
         this.locationRepository = locationRepository;
         this.regularEventRepository = regularEventRepository;
-        this.bookingService = bookingService;
+        this.eventService = eventService;
     }
 
     /**
@@ -198,6 +200,8 @@ public class TimeSlotsService {
                 Date.valueOf(startDate), Date.valueOf(endDate)
         ).stream().map(BookingEntity::getId).toList();
 
+        eventService.removeEventByBookingIds(idsToDelete);
+
         return bookingRepository.deleteAllByIdIn(idsToDelete);
     }
 
@@ -216,6 +220,8 @@ public class TimeSlotsService {
                     .map(BookingEntity::getId)
                     .toList());
         }
+
+        eventService.removeEventByBookingIds(idsToDelete);
 
         return bookingRepository.deleteAllByIdIn(idsToDelete);
     }
