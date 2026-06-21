@@ -41,8 +41,15 @@ jobs:
           script: |
             cd havePlace/apps
             
-            sudo truncate -s 0 application.log || true
+            sudo killall java || true
             
-            sudo bash -c "nohup java -jar *.jar >> application.log 2>&1 &"
+            sleep 2
             
+            sudo rm application.log || true
+            
+            sudo nohup java -jar *.jar >> application.log 2>&1 &
+            
+            sleep 3
+  
+            echo "Деплой успешно завершен!"
             exit 0

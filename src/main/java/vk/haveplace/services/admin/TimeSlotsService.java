@@ -193,6 +193,15 @@ public class TimeSlotsService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
+    public Integer removeAllTimeSlotsForPeriod(LocalDate startDate, LocalDate endDate) {
+        List<Integer> idsToDelete = bookingRepository.findAllFromStartDateToEndDateOrderByDate(
+                Date.valueOf(startDate), Date.valueOf(endDate)
+        ).stream().map(BookingEntity::getId).toList();
+
+        return bookingRepository.deleteAllByIdIn(idsToDelete);
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Integer removeTimeSlotsForDay(LocalDate date,
                                          List<TimeSlot> timeSlots) {
         List<BookingEntity> existingBookingsForDay = bookingRepository.findAllByDate(Date.valueOf(date));

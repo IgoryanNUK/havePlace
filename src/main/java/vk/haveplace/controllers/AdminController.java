@@ -62,6 +62,12 @@ public class AdminController {
         return new ResponseEntity<>(ans, HttpStatus.OK);
     }
 
+    @DeleteMapping("/timeSlots/{startDate}/{endDate}")
+    public ResponseEntity<Integer> removeAllTimeSlotsForPeriod(@PathVariable LocalDate startDate, @PathVariable LocalDate endDate) {
+        Integer ans = timeSlotsService.removeAllTimeSlotsForPeriod(startDate, endDate);
+        return new ResponseEntity<>(ans, HttpStatus.OK);
+    }
+
     @PostMapping("/timeSlots/add/{date}")
     public ResponseEntity<Integer> addTimeSlots(@PathVariable LocalDate date,
                                                 @RequestBody @NotNull List<TimeSlot> timeSlots) {
