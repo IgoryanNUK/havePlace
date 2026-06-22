@@ -40,9 +40,7 @@ public class BookingMapper {
     public static BookingDTO getDTOFromEntity(BookingEntity entity, Function<Integer, Integer> getRestDayBookingId) {
         BookingDTO dto = getDTOFromEntity(entity);
 
-        if(dto.getStatus().equals(BookingStatus.FREE) &&
-                (dto.getDate().getDayOfWeek().equals(DayOfWeek.SUNDAY) ||
-                        dto.getDate().getDayOfWeek().equals(DayOfWeek.SATURDAY))) {
+        if(dto.getStatus().equals(BookingStatus.FREE)) {
             dto.setRestDayBookingsId(getRestDayBookingId.apply(entity.getId()));
         }
 
